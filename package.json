@@ -1,0 +1,16 @@
+{
+  "name": "sincerely-yours-deal-memo",
+  "version": "1.0.0",
+  "description": "Deal Memo Generator for Sincerely Yours Media",
+  "scripts": {
+    "dev": "open index.html",
+    "build": "echo 'No build step required'"
+  },
+  "keywords": [
+    "deal-memo",
+    "music-industry",
+    "contract-generator"
+  ],
+  "author": "Sincerely Yours Media",
+  "license": "Private"
+}

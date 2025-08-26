@@ -1,0 +1,649 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sincerely Yours Media - Deal Memo Generator</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        h1 {
+            color: #333;
+            border-bottom: 3px solid #6B46C1;
+            padding-bottom: 10px;
+            margin-bottom: 10px;
+        }
+        
+        .subtitle {
+            color: #666;
+            margin-bottom: 20px;
+            font-style: italic;
+        }
+        
+        .form-section {
+            margin: 20px 0;
+            padding: 20px;
+            background: #f9f9f9;
+            border-radius: 5px;
+            border-left: 4px solid #6B46C1;
+        }
+        
+        .form-section h3 {
+            margin-top: 0;
+            color: #555;
+        }
+        
+        .form-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #666;
+            font-size: 13px;
+        }
+        
+        input, select {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        
+        select {
+            cursor: pointer;
+        }
+        
+        button {
+            background: #6B46C1;
+            color: white;
+            padding: 12px 30px;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            margin-top: 20px;
+            font-weight: bold;
+        }
+        
+        button:hover {
+            background: #553396;
+        }
+        
+        #output {
+            margin-top: 30px;
+            padding: 25px;
+            background: white;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            white-space: pre-wrap;
+            font-family: 'Courier New', monospace;
+            line-height: 1.6;
+            display: none;
+            font-size: 13px;
+        }
+        
+        .copy-btn {
+            background: #2196F3;
+            margin-left: 10px;
+        }
+        
+        .copy-btn:hover {
+            background: #0b7dda;
+        }
+        
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        
+        .info-text {
+            color: #888;
+            font-size: 12px;
+            font-style: italic;
+            margin-top: 3px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📄 Sincerely Yours Media - Deal Memo Generator</h1>
+        <div class="subtitle">Recording Agreement Deal Memo Template</div>
+        
+        <div class="form-section">
+            <h3>Basic Information</h3>
+            <div class="form-row">
+                <div>
+                    <label>Artist Professional Name *</label>
+                    <input type="text" id="artistName" placeholder="e.g., Day Lee" required>
+                </div>
+                <div>
+                    <label>Agreement Date *</label>
+                    <input type="date" id="date" required>
+                </div>
+                <div>
+                    <label>Email (optional)</label>
+                    <input type="email" id="email" placeholder="Leave blank if sending via email">
+                    <div class="info-text">Leave blank for blank line</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="form-section">
+            <h3>Deal Structure</h3>
+            <div class="form-row">
+                <div>
+                    <label>Deal Type *</label>
+                    <select id="dealType">
+                        <option value="album">Studio Album</option>
+                        <option value="ep">EP</option>
+                        <option value="singles">Singles</option>
+                    </select>
+                </div>
+                <div>
+                    <label>Number of Masters *</label>
+                    <input type="number" id="initialMasters" value="12" min="1" required>
+                </div>
+                <div>
+                    <label>Territory</label>
+                    <select id="territory">
+                        <option value="universe">The Universe</option>
+                        <option value="custom">Custom (specify)</option>
+                    </select>
+                </div>
+                <div id="customTerritoryDiv" style="display:none;">
+                    <label>Custom Territory</label>
+                    <input type="text" id="customTerritory" placeholder="e.g., The Universe ex-Canada">
+                </div>
+            </div>
+            <div class="form-row">
+                <div>
+                    <label>Number of Option Periods</label>
+                    <input type="number" id="optionPeriods" value="1" min="0">
+                </div>
+                <div>
+                    <label>Masters per Option</label>
+                    <input type="number" id="optionMasters" value="12" min="1">
+                </div>
+                <div>
+                    <label>Catalog Acquisition</label>
+                    <select id="catalogAcquisition">
+                        <option value="no">No</option>
+                        <option value="yes">Yes - Specify Songs</option>
+                    </select>
+                </div>
+                <div id="catalogSongsDiv" style="display:none;">
+                    <label>Catalog Songs</label>
+                    <input type="text" id="catalogSongs" placeholder='e.g., all prior recordings'>
+                    <div class="info-text">Describe the catalog songs</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="form-section">
+            <h3>Financial Terms</h3>
+            <div class="form-row">
+                <div>
+                    <label>Artist Advance ($) *</label>
+                    <input type="number" id="totalAdvance" value="25000" min="0" required>
+                    <div class="info-text">Will be split into thirds</div>
+                </div>
+                <div>
+                    <label>Recording Budget ($) *</label>
+                    <input type="number" id="recordingBudget" value="25000" min="0" required>
+                </div>
+                <div>
+                    <label>Marketing Budget ($) *</label>
+                    <input type="number" id="marketingBudget" value="30000" min="0" required>
+                </div>
+            </div>
+        </div>
+        
+        <div class="form-section">
+            <h3>Profit Shares & Rights</h3>
+            <div class="form-row">
+                <div>
+                    <label>Net Profit Share (%) *</label>
+                    <input type="number" id="netProfit" value="40" min="0" max="100" required>
+                </div>
+                <div>
+                    <label>Sync License Share (%) *</label>
+                    <input type="number" id="syncProfit" value="50" min="0" max="100" required>
+                </div>
+                <div>
+                    <label>Merchandise Revenue Share (%)</label>
+                    <input type="number" id="merchShare" placeholder="Leave blank if N/A" min="0" max="100">
+                    <div class="info-text">Leave blank if no merch deal</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="form-section">
+            <h3>Term & Licensing</h3>
+            <div class="form-row">
+                <div>
+                    <label>Exclusive Period (months) *</label>
+                    <input type="number" id="exclusivePeriod" value="6" min="1" required>
+                    <div class="info-text">After last release</div>
+                </div>
+                <div>
+                    <label>Licensing Period (years) *</label>
+                    <input type="number" id="licensingYears" value="25" min="1" required>
+                </div>
+                <div>
+                    <label>First Negotiation Period</label>
+                    <select id="firstNegotiationPeriod">
+                        <option value="3">3 months</option>
+                        <option value="6" selected>6 months</option>
+                    </select>
+                    <div class="info-text">After term ends</div>
+                </div>
+            </div>
+            <div class="form-row">
+                <div>
+                    <label>Exclusive Negotiation (days) *</label>
+                    <input type="number" id="negotiationDays" value="60" min="1" required>
+                </div>
+                <div>
+                    <label>Matching Rights (business days) *</label>
+                    <input type="number" id="matchingDays" value="15" min="1" required>
+                </div>
+            </div>
+        </div>
+        
+        <div class="form-section">
+            <h3>Signatory</h3>
+            <div class="form-row">
+                <div>
+                    <label>Signed By</label>
+                    <input type="text" id="signatory" value="Lynn Gonzalez">
+                </div>
+            </div>
+        </div>
+        
+        <div class="button-group">
+            <button id="generatePdfBtn">Generate Deal Memo PDF</button>
+            <button class="copy-btn" id="copyBtn">Generate & Copy Text</button>
+        </div>
+        
+        <div id="output"></div>
+    </div>
+    
+    <script>
+        // Update deal type
+        document.getElementById('dealType').addEventListener('change', function() {
+            const dealType = this.value;
+            const mastersField = document.getElementById('initialMasters');
+            const optionMastersField = document.getElementById('optionMasters');
+            
+            if (dealType === 'ep') {
+                mastersField.value = '8';
+                optionMastersField.value = '8';
+            } else if (dealType === 'album') {
+                mastersField.value = '12';
+                optionMastersField.value = '12';
+            } else {
+                mastersField.value = '5';
+                optionMastersField.value = '5';
+            }
+        });
+        
+        // Toggle catalog songs
+        document.getElementById('catalogAcquisition').addEventListener('change', function() {
+            const catalogDiv = document.getElementById('catalogSongsDiv');
+            if (this.value === 'yes') {
+                catalogDiv.style.display = 'block';
+            } else {
+                catalogDiv.style.display = 'none';
+            }
+        });
+        
+        // Toggle custom territory
+        document.getElementById('territory').addEventListener('change', function() {
+            const customDiv = document.getElementById('customTerritoryDiv');
+            if (this.value === 'custom') {
+                customDiv.style.display = 'block';
+            } else {
+                customDiv.style.display = 'none';
+            }
+        });
+        
+        // Format number with dollar sign
+        function formatNumber(num) {
+            return '$' + parseInt(num).toLocaleString();
+        }
+        
+        // Format date
+        function formatDate(dateString) {
+            const date = new Date(dateString);
+            const months = ['January', 'February', 'March', 'April', 'May', 'June', 
+                          'July', 'August', 'September', 'October', 'November', 'December'];
+            const day = date.getDate();
+            return `${months[date.getMonth()]} ${day}, ${date.getFullYear()}`;
+        }
+        
+        // Build memo text for display/copy
+        function buildMemoText() {
+            // Get all values
+            const artistName = document.getElementById('artistName').value;
+            const date = document.getElementById('date').value;
+            const email = document.getElementById('email').value;
+            const dealType = document.getElementById('dealType').value;
+            const initialMasters = document.getElementById('initialMasters').value;
+            const optionPeriods = document.getElementById('optionPeriods').value;
+            const optionMasters = document.getElementById('optionMasters').value;
+            const totalAdvance = document.getElementById('totalAdvance').value;
+            const recordingBudget = document.getElementById('recordingBudget').value;
+            const marketingBudget = document.getElementById('marketingBudget').value;
+            const netProfit = document.getElementById('netProfit').value;
+            const syncProfit = document.getElementById('syncProfit').value;
+            const merchShare = document.getElementById('merchShare').value;
+            const exclusivePeriod = document.getElementById('exclusivePeriod').value;
+            const licensingYears = document.getElementById('licensingYears').value;
+            const negotiationDays = document.getElementById('negotiationDays').value;
+            const matchingDays = document.getElementById('matchingDays').value;
+            const signatory = document.getElementById('signatory').value;
+            const firstNegotiationPeriod = document.getElementById('firstNegotiationPeriod').value;
+            const territory = document.getElementById('territory').value;
+            const customTerritory = document.getElementById('customTerritory').value;
+            const catalogAcquisition = document.getElementById('catalogAcquisition').value;
+            const catalogSongs = document.getElementById('catalogSongs').value;
+            
+            // Validation
+            if (!artistName) {
+                alert('Please enter the artist name');
+                return null;
+            }
+            
+            // Calculate payment schedule
+            const advanceAmount = parseInt(totalAdvance);
+            const firstThird = Math.ceil(advanceAmount / 3);
+            const secondThird = Math.floor(advanceAmount / 3);
+            const finalThird = advanceAmount - firstThird - secondThird;
+            
+            // Format territory
+            const territoryText = territory === 'custom' && customTerritory ? customTerritory : "The Universe";
+            
+            // Format deal type
+            const dealTypeText = dealType === 'album' ? 'one studio album' : 
+                                dealType === 'ep' ? 'one EP' : 
+                                `${initialMasters} singles`;
+            
+            // Format masters number
+            const mastersText = initialMasters == '12' ? 'twelve (12)' :
+                               initialMasters == '8' ? 'eight (8)' :
+                               initialMasters == '5' ? 'five (5)' :
+                               initialMasters == '10' ? 'ten (10)' :
+                               `${initialMasters}`;
+            
+            // Format option masters
+            const optionMastersText = optionMasters == '12' ? 'twelve (12) Masters' :
+                                     optionMasters == '8' ? 'eight (8) Masters' :
+                                     `${optionMasters} Masters`;
+            
+            // Build catalog text
+            let catalogText = '';
+            if (catalogAcquisition === 'yes' && catalogSongs) {
+                catalogText = `, together with ${catalogSongs}`;
+            }
+            
+            // Build option text
+            let optionText = '';
+            if (parseInt(optionPeriods) > 0) {
+                const optionWord = parseInt(optionPeriods) === 1 ? 'one (1) option' : `${optionPeriods} options`;
+                optionText = ` In addition, Sincerely Yours would have ${optionWord} to extend the agreement to include an additional ${optionMastersText} in respect of such option.`;
+            }
+            
+            // Format email line
+            const emailLine = email ? `VIA EMAIL: ${email}` : 'VIA EMAIL: ____________________';
+            
+            // Build profits text
+            const merchText = merchShare ? ` Additionally, ${merchShare}% of Net Profits in connection with merchandise revenue.` : '';
+            const profitsSection = `${netProfit}% of Net Profits (to be defined in the Agreement) in connection with the Masters, and ${syncProfit}% of Net Profits in connection with revenue collected from third party sync licenses.${merchText} Unless otherwise agreed between the parties in writing, you will be responsible for paying all producers, mixers and side artists in connection with the Masters.`;
+            
+            // Build the complete memo
+            const memo = `Sincerely Yours Media LLC
+c/o Granderson Des Rochers LLP
+150 S. Rodeo Drive, Suite 300
+Beverly Hills, CA 90212
+
+
+Date: ${formatDate(date)}
+
+${emailLine}
+
+This proposal sets forth the material terms pursuant to which Sincerely Yours Media LLC ("us" or "Sincerely Yours") will enter into an agreement with the recording artist professionally known as "${artistName}" ("you" or "Artist") in respect of master recordings ("Masters") featuring their performance.
+
+1. Territory: ${territoryText}.
+
+2. Exclusive Period: Begins on the Effective Date (to be defined in the Agreement) and continues until ${exclusivePeriod} months from the release date of the last Master released under the Agreement (the "Term").
+
+3. Delivery Commitment: you will Deliver (to be defined in the Agreement) to Sincerely Yours ${dealTypeText} that includes no less than ${mastersText} Masters${catalogText} (the "Initial Period").${optionText}
+
+4. Advance: Sincerely Yours would pay you an advance of ${formatNumber(totalAdvance)} during each contract period, which amount would be paid to you as follows: one-third (1/3) of the advance (${formatNumber(firstThird)}) upon signing of this agreement for such contract period, one-third (1/3) of the advance (${formatNumber(secondThird)}) following Delivery of cleared records for such contract period, and the final one-third (1/3) of the advance (${formatNumber(finalThird)}) upon commercial release of the recording commitment for such contract period.
+
+5. Recording Costs: Sincerely Yours would make available a budget of up to ${formatNumber(recordingBudget)} to be used in connection with recording costs during each Contract Period, which amount would be administered by Sincerely Yours.
+
+6. Marketing Costs: ${formatNumber(marketingBudget)} drawdown fund (the "Advance") to be used, at our sole discretion, for marketing, advertising and promotion costs in connection with the Recording Commitment during each contract period. The Advance will be deemed a recoupable advance against your share of Net Profits.
+
+7. Profits: ${profitsSection}
+
+8. Accounting: Semi-annually, within 90 days of the applicable accounting period.
+
+9. Rights;Licensing Period: We shall have the exclusive right during the Licensing Period (defined below) to exploit the Masters made during and/or prior to the Term and Delivered during the Term. "Licensing Period" means the period commencing on the Effective Date and continues until the later of: (A) ${licensingYears == '15' ? 'fifteen (15)' : licensingYears == '25' ? 'twenty five (25)' : licensingYears} years following the commencement of the Term; or (B) the end of the semi-annual accounting period during which your royalty account became fully recouped.
+
+10. First Negotiation/Matching Right: During the Term, and for a period of ${firstNegotiationPeriod == '3' ? 'three (3)' : 'six (6)'} months following the expiration or termination of the Term, prior to entering into negotiations with any third party with respect to your recording services and/or the rights in and to the Masters, you shall first notify us that you would like to negotiate such an agreement, after which you shall negotiate with us exclusively for ${negotiationDays} days.
+
+    a. If, by the expiration of such ${negotiationDays}-day period, no agreement is reached between you and us, you may negotiate with third parties an agreement with respect to your recording services and/or the right to exploit Masters, but may not enter into an agreement with any third party other than us unless you first: (i) notify us in writing of the material terms of the proposed agreement pursuant to which such rights are to be granted and the identities of all proposed parties to such agreement ("Third-Party Offer"); and (ii) offer to enter into an agreement with us on the same material financial terms as the Third-Party Offer ("Matching Right").
+
+    b. If we do not accept the Third-Party Offer within ${matchingDays == '15' ? 'fifteen (15)' : matchingDays} business days after we receive such Third-Party Offer, you may then enter into the agreement set forth in the Third-Party Offer, provided that such agreement is consummated upon the same or better terms (for you) and in the same form set forth in the Third-Party Offer.
+
+Please note that I must reserve the right for Sincerely Yours senior management to modify the terms suggested herein.
+
+Best,
+
+${signatory}`;
+            
+            return memo;
+        }
+        
+        // Generate PDF with proper formatting
+        function generateMemo() {
+            const memoText = buildMemoText();
+            if (!memoText) return;
+            
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+            
+            // Set margins and dimensions
+            const leftMargin = 25;
+            const rightMargin = 25;
+            const topMargin = 25;
+            const bottomMargin = 25;
+            const pageWidth = doc.internal.pageSize.width;
+            const pageHeight = doc.internal.pageSize.height;
+            const contentWidth = pageWidth - leftMargin - rightMargin;
+            
+            let yPos = topMargin;
+            const lineHeight = 5;
+            const paragraphSpacing = 8;
+            
+            // Set font
+            doc.setFontSize(11);
+            doc.setFont("helvetica", "normal");
+            
+            // Process text line by line
+            const lines = memoText.split('\n');
+            
+            lines.forEach((line, index) => {
+                // Check if we need a new page
+                if (yPos > pageHeight - bottomMargin) {
+                    doc.addPage();
+                    yPos = topMargin;
+                }
+                
+                // Handle header (company name and address)
+                if (index < 4 && line.includes('Sincerely Yours') || line.includes('Granderson') || 
+                    line.includes('150 S.') || line.includes('Beverly Hills')) {
+                    doc.setFont("helvetica", "normal");
+                    doc.text(line, leftMargin, yPos);
+                    yPos += lineHeight;
+                }
+                // Handle Date line
+                else if (line.startsWith('Date:')) {
+                    yPos += paragraphSpacing;
+                    doc.text(line, leftMargin, yPos);
+                    yPos += lineHeight;
+                }
+                // Handle VIA EMAIL line
+                else if (line.startsWith('VIA EMAIL:')) {
+                    yPos += paragraphSpacing;
+                    doc.text(line, leftMargin, yPos);
+                    yPos += lineHeight;
+                }
+                // Handle numbered sections
+                else if (/^\d+\./.test(line)) {
+                    yPos += paragraphSpacing;
+                    // Extract number and label
+                    const match = line.match(/^(\d+\.\s)([^:]+:)(.*)/);
+                    if (match) {
+                        const number = match[1];
+                        const label = match[2];
+                        const content = match[3];
+                        
+                        // Draw number
+                        doc.setFont("helvetica", "normal");
+                        doc.text(number, leftMargin, yPos);
+                        
+                        // Draw label in bold with underline
+                        const numberWidth = doc.getTextWidth(number);
+                        doc.setFont("helvetica", "bold");
+                        doc.text(label, leftMargin + numberWidth, yPos);
+                        const labelWidth = doc.getTextWidth(label);
+                        doc.line(leftMargin + numberWidth, yPos + 0.5, leftMargin + numberWidth + labelWidth, yPos + 0.5);
+                        
+                        // Draw content
+                        doc.setFont("helvetica", "normal");
+                        const remainingText = content;
+                        const splitText = doc.splitTextToSize(remainingText, contentWidth - numberWidth - labelWidth);
+                        
+                        if (splitText[0]) {
+                            doc.text(splitText[0], leftMargin + numberWidth + labelWidth, yPos);
+                        }
+                        
+                        for (let i = 1; i < splitText.length; i++) {
+                            yPos += lineHeight;
+                            if (yPos > pageHeight - bottomMargin) {
+                                doc.addPage();
+                                yPos = topMargin;
+                            }
+                            doc.text(splitText[i], leftMargin, yPos);
+                        }
+                        yPos += lineHeight;
+                    } else {
+                        // Handle numbered lines without colons
+                        const splitText = doc.splitTextToSize(line, contentWidth);
+                        splitText.forEach((textLine, i) => {
+                            if (yPos > pageHeight - bottomMargin) {
+                                doc.addPage();
+                                yPos = topMargin;
+                            }
+                            doc.text(textLine, leftMargin, yPos);
+                            yPos += lineHeight;
+                        });
+                    }
+                }
+                // Handle sub-items (a. and b.)
+                else if (line.trim().match(/^[ab]\./)) {
+                    const splitText = doc.splitTextToSize(line.trim(), contentWidth - 15);
+                    splitText.forEach((textLine, i) => {
+                        if (yPos > pageHeight - bottomMargin) {
+                            doc.addPage();
+                            yPos = topMargin;
+                        }
+                        doc.text(textLine, leftMargin + 15, yPos);
+                        yPos += lineHeight;
+                    });
+                }
+                // Handle empty lines
+                else if (line.trim() === '') {
+                    yPos += lineHeight * 0.5;
+                }
+                // Handle regular text
+                else if (line.trim()) {
+                    const splitText = doc.splitTextToSize(line, contentWidth);
+                    splitText.forEach((textLine) => {
+                        if (yPos > pageHeight - bottomMargin) {
+                            doc.addPage();
+                            yPos = topMargin;
+                        }
+                        doc.text(textLine, leftMargin, yPos);
+                        yPos += lineHeight;
+                    });
+                }
+            });
+            
+            // Save the PDF
+            const artistName = document.getElementById('artistName').value.replace(/\s+/g, '_');
+            const date = document.getElementById('date').value;
+            const filename = `Deal_Memo_${artistName}_${date}.pdf`;
+            doc.save(filename);
+        }
+        
+        // Generate and copy text
+        function generateAndCopy() {
+            const memoText = buildMemoText();
+            if (!memoText) return;
+            
+            // Display the output
+            const outputDiv = document.getElementById('output');
+            outputDiv.textContent = memoText;
+            outputDiv.style.display = 'block';
+            
+            // Copy to clipboard
+            navigator.clipboard.writeText(memoText).then(() => {
+                alert('Deal memo copied to clipboard!');
+            }).catch(err => {
+                const textArea = document.createElement("textarea");
+                textArea.value = memoText;
+                document.body.appendChild(textArea);
+                textArea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textArea);
+                alert('Deal memo copied to clipboard!');
+            });
+        }
+        
+        // Set up when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            // Set today's date
+            document.getElementById('date').valueAsDate = new Date();
+            
+            // Attach button handlers
+            document.getElementById('generatePdfBtn').addEventListener('click', generateMemo);
+            document.getElementById('copyBtn').addEventListener('click', generateAndCopy);
+        });
+    </script>
+</body>
+</html>
