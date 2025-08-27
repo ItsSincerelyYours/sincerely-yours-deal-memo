@@ -708,72 +708,153 @@ ${signatory}`;
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF();
             
-            let yPos = 20;
-            const lineHeight = 7;
-            const margin = 20;
+            // Professional business letter margins and settings
+            const leftMargin = 25;
+            const topMargin = 25;
+            const rightMargin = 25;
+            const pageHeight = doc.internal.pageSize.height;
             const pageWidth = doc.internal.pageSize.width;
-            const contentWidth = pageWidth - (margin * 2);
+            const contentWidth = pageWidth - leftMargin - rightMargin;
+            
+            let yPos = topMargin;
+            const lineHeight = 5;
+            const paragraphSpacing = 7;
+            
+            // Set professional font
+            doc.setFontSize(11);
+            doc.setFont("helvetica", "normal");
             
             const lines = memoText.split('\n');
-            doc.setFontSize(11);
             
-            lines.forEach(line => {
-                if (yPos > 270) {
+            lines.forEach((line, index) => {
+                // Check for page break
+                if (yPos > pageHeight - 25) {
                     doc.addPage();
-                    yPos = 20;
+                    yPos = topMargin;
                 }
                 
-                // Check for bold markers and handle accordingly
-                if (line.includes('**')) {
-                    // Parse line with bold sections
-                    let remainingText = line;
-                    let xPos = margin;
-                    
-                    while (remainingText.includes('**')) {
-                        const firstBold = remainingText.indexOf('**');
-                        const secondBold = remainingText.indexOf('**', firstBold + 2);
-                        
-                        if (secondBold > -1) {
-                            // Text before bold
-                            if (firstBold > 0) {
-                                doc.setFont(undefined, 'normal');
-                                const beforeText = remainingText.substring(0, firstBold);
-                                doc.text(beforeText, xPos, yPos);
-                                xPos += doc.getTextWidth(beforeText);
-                            }
-                            
-                            // Bold text
-                            doc.setFont(undefined, 'bold');
-                            const boldText = remainingText.substring(firstBold + 2, secondBold);
-                            doc.text(boldText, xPos, yPos);
-                            xPos += doc.getTextWidth(boldText);
-                            doc.setFont(undefined, 'normal');
-                            
-                            // Continue with remaining text
-                            remainingText = remainingText.substring(secondBold + 2);
-                        } else {
-                            // No closing bold marker
-                            doc.text(remainingText, xPos, yPos);
-                            break;
-                        }
-                    }
-                    
-                    // Any remaining text after last bold
-                    if (remainingText.length > 0) {
-                        doc.setFont(undefined, 'normal');
-                        doc.text(remainingText, xPos, yPos);
-                    }
-                    
+                // Header block (company name and address) - no special formatting
+                if (index < 4) {
+                    doc.setFont("helvetica", "normal");
+                    doc.text(line, leftMargin, yPos);
                     yPos += lineHeight;
-                } else {
-                    // Regular line without bold
+                }
+                // Empty lines for spacing
+                else if (line.trim() === '') {
+                    yPos += paragraphSpacing;
+                }
+                // Date line
+                else if (line.startsWith('Date:')) {
+                    doc.setFont("helvetica", "normal");
+                    doc.text(line, leftMargin, yPos);
+                    yPos += lineHeight;
+                }
+                // Via Email line
+                else if (line.startsWith('VIA EMAIL:')) {
+                    doc.setFont("helvetica", "normal");
+                    doc.text(line, leftMargin, yPos);
+                    yPos += lineHeight;
+                }
+                // Introduction paragraph
+                else if (line.includes('This proposal sets forth')) {
+                    doc.setFont("helvetica", "normal");
                     const splitText = doc.splitTextToSize(line, contentWidth);
                     splitText.forEach(textLine => {
-                        if (yPos > 270) {
+                        if (yPos > pageHeight - 25) {
                             doc.addPage();
-                            yPos = 20;
+                            yPos = topMargin;
                         }
-                        doc.text(textLine, margin, yPos);
+                        doc.text(textLine, leftMargin, yPos);
+                        yPos += lineHeight;
+                    });
+                }
+                // Numbered sections with bold labels
+                else if (line.match(/^\d+\./)) {
+                    // Find the colon to separate label from content
+                    const colonIndex = line.indexOf(':');
+                    if (colonIndex > -1) {
+                        const numberAndLabel = line.substring(0, colonIndex + 1);
+                        const content = line.substring(colonIndex + 1).trim();
+                        
+                        // Split long lines for wrapping
+                        const fullLine = numberAndLabel + ' ' + content;
+                        const splitText = doc.splitTextToSize(fullLine, contentWidth);
+                        
+                        splitText.forEach((textLine, lineIndex) => {
+                            if (yPos > pageHeight - 25) {
+                                doc.addPage();
+                                yPos = topMargin;
+                            }
+                            
+                            if (lineIndex === 0) {
+                                // First line: bold the section label
+                                const labelPart = numberAndLabel;
+                                const remainingPart = textLine.substring(labelPart.length);
+                                
+                                // Draw the label in bold
+                                doc.setFont("helvetica", "bold");
+                                doc.text(labelPart, leftMargin, yPos);
+                                
+                                // Draw the rest in normal
+                                const labelWidth = doc.getTextWidth(labelPart);
+                                doc.setFont("helvetica", "normal");
+                                doc.text(remainingPart, leftMargin + labelWidth, yPos);
+                            } else {
+                                // Continuation lines
+                                doc.setFont("helvetica", "normal");
+                                doc.text(textLine, leftMargin, yPos);
+                            }
+                            yPos += lineHeight;
+                        });
+                    } else {
+                        // No colon found, treat as regular line
+                        const splitText = doc.splitTextToSize(line, contentWidth);
+                        splitText.forEach(textLine => {
+                            if (yPos > pageHeight - 25) {
+                                doc.addPage();
+                                yPos = topMargin;
+                            }
+                            doc.text(textLine, leftMargin, yPos);
+                            yPos += lineHeight;
+                        });
+                    }
+                }
+                // Sub-sections (a. b. etc)
+                else if (line.match(/^\s+[a-z]\./)) {
+                    doc.setFont("helvetica", "normal");
+                    const splitText = doc.splitTextToSize(line, contentWidth - 10);
+                    splitText.forEach(textLine => {
+                        if (yPos > pageHeight - 25) {
+                            doc.addPage();
+                            yPos = topMargin;
+                        }
+                        doc.text(textLine, leftMargin + 10, yPos); // Indent subsections
+                        yPos += lineHeight;
+                    });
+                }
+                // Closing lines
+                else if (line.startsWith('Please note') || line.startsWith('Best,')) {
+                    doc.setFont("helvetica", "normal");
+                    const splitText = doc.splitTextToSize(line, contentWidth);
+                    splitText.forEach(textLine => {
+                        if (yPos > pageHeight - 25) {
+                            doc.addPage();
+                            yPos = topMargin;
+                        }
+                        doc.text(textLine, leftMargin, yPos);
+                        yPos += lineHeight;
+                    });
+                }
+                // Signature name
+                else {
+                    doc.setFont("helvetica", "normal");
+                    const splitText = doc.splitTextToSize(line, contentWidth);
+                    splitText.forEach(textLine => {
+                        if (yPos > pageHeight - 25) {
+                            doc.addPage();
+                            yPos = topMargin;
+                        }
+                        doc.text(textLine, leftMargin, yPos);
                         yPos += lineHeight;
                     });
                 }
