@@ -16,36 +16,11 @@
             background: #f5f5f5;
         }
         
-        .login-container {
-            background: white;
-            padding: 60px 40px;
-            border-radius: 10px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-            text-align: center;
-            max-width: 500px;
-            margin: 100px auto;
-        }
-        
-        .login-container h1 {
-            color: #333;
-            margin-bottom: 10px;
-        }
-        
-        .login-container p {
-            color: #666;
-            margin-bottom: 30px;
-        }
-        
         .container {
             background: white;
             padding: 30px;
             border-radius: 10px;
             box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-            display: none;
-        }
-        
-        .container.authenticated {
-            display: block;
         }
         
         h1 {
@@ -61,15 +36,19 @@
             font-style: italic;
         }
         
-        .user-info {
+        .google-status {
             padding: 10px;
             margin: 20px 0;
             border-radius: 5px;
+            background: #f0f0f0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .google-status.connected {
             background: #d4edda;
             color: #155724;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
         }
         
         .form-section {
@@ -125,7 +104,7 @@
         }
         
         button:hover {
-            background: #5a3ca1;
+            background: #553396;
         }
         
         .google-btn {
@@ -134,17 +113,6 @@
         
         .google-btn:hover {
             background: #357ae8;
-        }
-        
-        .sign-out-btn {
-            background: #666;
-            padding: 8px 16px;
-            font-size: 14px;
-            margin: 0;
-        }
-        
-        .sign-out-btn:hover {
-            background: #555;
         }
         
         #output {
@@ -202,39 +170,17 @@
             margin: 15px 0;
             display: none;
         }
-        
-        .access-denied {
-            background: #f8d7da;
-            border: 1px solid #f5c6cb;
-            color: #721c24;
-            padding: 20px;
-            border-radius: 4px;
-            margin: 20px 0;
-            text-align: center;
-        }
     </style>
 </head>
 <body>
-    <!-- Login Screen -->
-    <div class="login-container" id="loginContainer">
-        <h1>Sincerely Yours Media</h1>
-        <p>Deal Memo Generator</p>
-        <p style="font-size: 14px; color: #888;">Access restricted to Sincerely Yours team members</p>
-        <div id="googleSignInDiv"></div>
-        <div class="error-message" id="loginError" style="margin-top: 20px;"></div>
-    </div>
-
-    <!-- Main App (Hidden until authenticated) -->
-    <div class="container" id="mainContainer">
-        <h1>Sincerely Yours Media - Deal Memo Generator</h1>
-        <div class="subtitle">Recording Agreement Deal Memo Template</div>
+    <div class="container">
+        <h1>📄 Sincerely Yours Media - Deal Memo Generator</h1>
+        <div class="subtitle">Recording Agreement Deal Memo Template with Google Docs Integration</div>
         
-        <div class="user-info" id="userInfo">
-            <div>
-                <span>👤 Logged in as: </span>
-                <strong id="userEmail"></strong>
-            </div>
-            <button class="sign-out-btn" id="signOutBtn">Sign Out</button>
+        <div class="google-status" id="googleStatus">
+            <span>🔐</span>
+            <span id="statusText">Not connected to Google</span>
+            <button id="googleSignIn" class="google-btn" style="margin: 0; padding: 8px 20px;">Connect Google Account</button>
         </div>
         
         <div class="success-message" id="successMessage"></div>
@@ -244,17 +190,17 @@
             <h3>Basic Information</h3>
             <div class="form-row">
                 <div>
-                    <label>Artist Name *</label>
-                    <input type="text" id="artistName" placeholder="e.g., John Smith" required>
+                    <label>Artist Professional Name *</label>
+                    <input type="text" id="artistName" placeholder="e.g., Day Lee" required>
                 </div>
                 <div>
                     <label>Agreement Date *</label>
                     <input type="date" id="date" required>
                 </div>
                 <div>
-                    <label>Email Address</label>
-                    <input type="email" id="email" placeholder="artist@email.com">
-                    <div class="info-text">Leave blank for "VIA EMAIL"</div>
+                    <label>Email (optional)</label>
+                    <input type="email" id="email" placeholder="Leave blank if sending via email">
+                    <div class="info-text">Leave blank for blank line</div>
                 </div>
             </div>
         </div>
@@ -304,8 +250,8 @@
                 </div>
                 <div id="catalogSongsDiv" style="display:none;">
                     <label>Catalog Songs</label>
-                    <input type="text" id="catalogSongs" placeholder='e.g., "Song Title 1", "Song Title 2"'>
-                    <div class="info-text">List the song titles</div>
+                    <input type="text" id="catalogSongs" placeholder='e.g., all prior recordings'>
+                    <div class="info-text">Describe the catalog songs</div>
                 </div>
             </div>
         </div>
@@ -314,17 +260,17 @@
             <h3>Financial Terms</h3>
             <div class="form-row">
                 <div>
-                    <label>Total Advance ($) *</label>
-                    <input type="number" id="totalAdvance" value="10000" min="0" required>
-                    <div class="info-text">Will be split into three payments</div>
+                    <label>Artist Advance ($) *</label>
+                    <input type="number" id="totalAdvance" value="25000" min="0" required>
+                    <div class="info-text">Will be split into thirds</div>
                 </div>
                 <div>
                     <label>Recording Budget ($) *</label>
-                    <input type="number" id="recordingBudget" value="10000" min="0" required>
+                    <input type="number" id="recordingBudget" value="25000" min="0" required>
                 </div>
                 <div>
                     <label>Marketing Budget ($) *</label>
-                    <input type="number" id="marketingBudget" value="10000" min="0" required>
+                    <input type="number" id="marketingBudget" value="30000" min="0" required>
                 </div>
             </div>
         </div>
@@ -334,7 +280,7 @@
             <div class="form-row">
                 <div>
                     <label>Net Profit Share (%) *</label>
-                    <input type="number" id="netProfit" value="50" min="0" max="100" required>
+                    <input type="number" id="netProfit" value="40" min="0" max="100" required>
                 </div>
                 <div>
                     <label>Sync License Share (%) *</label>
@@ -386,7 +332,7 @@
             <div class="form-row">
                 <div>
                     <label>Signed By</label>
-                    <input type="text" id="signatory" value="Christopher Blackwell">
+                    <input type="text" id="signatory" value="Lynn Gonzalez">
                 </div>
             </div>
         </div>
@@ -402,116 +348,53 @@
     
     <script>
         // Google API Configuration
-        const CLIENT_ID = '464744009556-3cuv6q0s1tlvta2ig8rp61g6bkfm7v7k.apps.googleusercontent.com';
-        const API_KEY = 'AIzaSyCZcBYSS2Mkh2bRaISVdKLmLtwGD8PjIkQ';
+        const CLIENT_ID = '464744009556-3cuv6q0s1tlvta2ig8rp61g6bkfm7v7k.apps.googleusercontent.com'; // Your Client ID
+        const API_KEY = 'AIzaSyCZcBYSS2Mkh2bRaISVdKLmLtwGD8PjIkQ'; // Your API Key
         const DISCOVERY_DOCS = ['https://docs.googleapis.com/$discovery/rest?version=v1'];
-        const SCOPES = 'https://www.googleapis.com/auth/documents https://www.googleapis.com/auth/drive.file https://www.googleapis.com/auth/userinfo.email';
+        const SCOPES = 'https://www.googleapis.com/auth/documents https://www.googleapis.com/auth/drive.file';
         
         let tokenClient;
         let accessToken = null;
-        let currentUser = null;
         
-        // Initialize Google Sign-In
-        function initializeGoogleSignIn() {
-            google.accounts.id.initialize({
-                client_id: CLIENT_ID,
-                callback: handleCredentialResponse,
-                auto_select: false,
-                cancel_on_tap_outside: true,
-            });
-            
-            google.accounts.id.renderButton(
-                document.getElementById("googleSignInDiv"),
-                { 
-                    theme: "filled_blue", 
-                    size: "large",
-                    text: "sign_in_with",
-                    shape: "rectangular",
-                    width: 300
-                }
-            );
-            
-            // Initialize token client for additional scopes
+        // Initialize Google API
+        function initializeGoogleAPI() {
             tokenClient = google.accounts.oauth2.initTokenClient({
                 client_id: CLIENT_ID,
                 scope: SCOPES,
                 callback: (response) => {
                     accessToken = response.access_token;
+                    updateGoogleStatus(true);
+                    showSuccess('Connected to Google successfully!');
                 },
             });
         }
         
-        // Handle Google Sign-In response
-        function handleCredentialResponse(response) {
-            // Decode JWT to get user info
-            const responsePayload = decodeJwtResponse(response.credential);
-            
-            // Check if email domain is @sincerely-yours.xyz
-            const email = responsePayload.email;
-            const emailDomain = email.split('@')[1];
-            
-            if (emailDomain !== 'sincerely-yours.xyz') {
-                showLoginError(`Access denied. This tool is only available to Sincerely Yours team members. You are signed in as ${email}`);
-                return;
+        // Handle Google Sign In
+        document.getElementById('googleSignIn').addEventListener('click', () => {
+            if (accessToken === null) {
+                tokenClient.requestAccessToken();
+            } else {
+                google.accounts.oauth2.revoke(accessToken, () => {
+                    accessToken = null;
+                    updateGoogleStatus(false);
+                });
             }
-            
-            // User is authorized
-            currentUser = {
-                email: email,
-                name: responsePayload.name,
-                picture: responsePayload.picture
-            };
-            
-            // Request additional permissions for Google Docs
-            tokenClient.requestAccessToken();
-            
-            // Show the main app
-            showMainApp();
-        }
+        });
         
-        // Decode JWT token
-        function decodeJwtResponse(token) {
-            const base64Url = token.split('.')[1];
-            const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-            const jsonPayload = decodeURIComponent(atob(base64).split('').map(function(c) {
-                return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
-            }).join(''));
+        // Update Google connection status
+        function updateGoogleStatus(connected) {
+            const statusDiv = document.getElementById('googleStatus');
+            const statusText = document.getElementById('statusText');
+            const signInBtn = document.getElementById('googleSignIn');
             
-            return JSON.parse(jsonPayload);
-        }
-        
-        // Show main app after successful authentication
-        function showMainApp() {
-            document.getElementById('loginContainer').style.display = 'none';
-            document.getElementById('mainContainer').classList.add('authenticated');
-            document.getElementById('userEmail').textContent = currentUser.email;
-        }
-        
-        // Show login error
-        function showLoginError(message) {
-            const errorDiv = document.getElementById('loginError');
-            errorDiv.textContent = message;
-            errorDiv.style.display = 'block';
-            setTimeout(() => {
-                errorDiv.style.display = 'none';
-            }, 10000);
-        }
-        
-        // Sign out
-        function signOut() {
-            google.accounts.id.disableAutoSelect();
-            currentUser = null;
-            accessToken = null;
-            document.getElementById('mainContainer').classList.remove('authenticated');
-            document.getElementById('loginContainer').style.display = 'block';
-            
-            // Clear form data
-            document.getElementById('artistName').value = '';
-            document.getElementById('email').value = '';
-            
-            // Revoke token if exists
-            if (accessToken) {
-                google.accounts.oauth2.revoke(accessToken);
+            if (connected) {
+                statusDiv.classList.add('connected');
+                statusText.textContent = 'Connected to Google';
+                signInBtn.textContent = 'Disconnect';
+            } else {
+                statusDiv.classList.remove('connected');
+                statusText.textContent = 'Not connected to Google';
+                signInBtn.textContent = 'Connect Google Account';
             }
         }
         
@@ -538,8 +421,7 @@
         // Create Google Doc
         async function createGoogleDoc() {
             if (!accessToken) {
-                showError('Please re-authenticate to create Google Docs');
-                tokenClient.requestAccessToken();
+                showError('Please connect your Google account first');
                 return;
             }
             
@@ -603,9 +485,11 @@
         
         // Format memo text for Google Docs API
         function formatMemoForGoogleDocs(memoText) {
+            // Split the memo into sections and create requests for formatting
             const requests = [];
             let insertIndex = 1;
             
+            // Insert all text first
             requests.push({
                 insertText: {
                     location: { index: insertIndex },
@@ -613,11 +497,14 @@
                 }
             });
             
+            // Add formatting requests (bold for headers, etc.)
+            // This is simplified - you can add more complex formatting as needed
             const lines = memoText.split('\n');
             let currentIndex = 1;
             
             lines.forEach(line => {
                 if (line.match(/^\d+\./)) {
+                    // Bold the section numbers and labels
                     const match = line.match(/^(\d+\.\s)([^:]+:)/);
                     if (match) {
                         const numberLength = match[1].length;
@@ -637,11 +524,14 @@
                         });
                     }
                 }
-                currentIndex += line.length + 1;
+                currentIndex += line.length + 1; // +1 for newline
             });
             
             return requests;
         }
+        
+        // Existing functions (buildMemoText, etc.) remain the same
+        // ... [Include all the existing JavaScript functions from the original file]
         
         // Update deal type
         document.getElementById('dealType').addEventListener('change', function() {
@@ -697,6 +587,7 @@
         
         // Build memo text for display/copy
         function buildMemoText() {
+            // [Include the complete buildMemoText function from the original file]
             // Get all values
             const artistName = document.getElementById('artistName').value;
             const date = document.getElementById('date').value;
@@ -730,29 +621,23 @@
             
             // Calculate payment schedule
             const advanceAmount = parseInt(totalAdvance);
-            const firstThird = Math.floor(advanceAmount / 3);
+            const firstThird = Math.ceil(advanceAmount / 3);
             const secondThird = Math.floor(advanceAmount / 3);
             const finalThird = advanceAmount - firstThird - secondThird;
             
-            // Format all the fields
+            // Format all the fields (same as original)
             const territoryText = territory === 'custom' && customTerritory ? customTerritory : "The Universe";
             const dealTypeText = dealType === 'album' ? 'one studio album' : 
                                 dealType === 'ep' ? 'one EP' : 
                                 `${initialMasters} singles`;
-            
-            // Format numbers as word (number)
-            const numberToWord = (num) => {
-                const numbers = {
-                    '1': 'one', '2': 'two', '3': 'three', '4': 'four', '5': 'five',
-                    '6': 'six', '7': 'seven', '8': 'eight', '9': 'nine', '10': 'ten',
-                    '11': 'eleven', '12': 'twelve', '15': 'fifteen', '20': 'twenty',
-                    '25': 'twenty-five', '30': 'thirty', '60': 'sixty', '90': 'ninety'
-                };
-                return numbers[num] ? `${numbers[num]} (${num})` : `${num}`;
-            };
-            
-            const mastersText = numberToWord(initialMasters);
-            const optionMastersText = numberToWord(optionMasters);
+            const mastersText = initialMasters == '12' ? 'twelve (12)' :
+                               initialMasters == '8' ? 'eight (8)' :
+                               initialMasters == '5' ? 'five (5)' :
+                               initialMasters == '10' ? 'ten (10)' :
+                               `${initialMasters}`;
+            const optionMastersText = optionMasters == '12' ? 'twelve (12) Masters' :
+                                     optionMasters == '8' ? 'eight (8) Masters' :
+                                     `${optionMasters} Masters`;
             
             let catalogText = '';
             if (catalogAcquisition === 'yes' && catalogSongs) {
@@ -761,59 +646,54 @@
             
             let optionText = '';
             if (parseInt(optionPeriods) > 0) {
-                const optionWord = parseInt(optionPeriods) === 1 ? 'one (1) option' : `${numberToWord(optionPeriods)} options`;
-                optionText = `, with ${optionWord} to enter into additional recording commitments with Artist, with ${optionMastersText} Masters to be delivered in respect of each option`;
+                const optionWord = parseInt(optionPeriods) === 1 ? 'one (1) option' : `${optionPeriods} options`;
+                optionText = ` In addition, Sincerely Yours would have ${optionWord} to extend the agreement to include an additional ${optionMastersText} in respect of such option.`;
             }
             
+            const emailLine = email ? `VIA EMAIL: ${email}` : 'VIA EMAIL: ____________________';
             const merchText = merchShare ? ` Additionally, ${merchShare}% of Net Profits in connection with merchandise revenue.` : '';
             const profitsSection = `${netProfit}% of Net Profits (to be defined in the Agreement) in connection with the Masters, and ${syncProfit}% of Net Profits in connection with revenue collected from third party sync licenses.${merchText} Unless otherwise agreed between the parties in writing, you will be responsible for paying all producers, mixers and side artists in connection with the Masters.`;
             
-            // Build the complete memo (US version)
-            const memo = `                    ${formatDate(date)}
+            // Build the complete memo (same as original)
+            const memo = `Sincerely Yours Media LLC
+c/o Granderson Des Rochers LLP
+150 S. Rodeo Drive, Suite 300
+Beverly Hills, CA 90212
 
-Sincerely Yours Media LLC
-12130 Millennium Dr.
-Los Angeles, CA 90094
 
-${artistName}
-${email ? `VIA EMAIL: ${email}` : 'VIA EMAIL'}
+Date: ${formatDate(date)}
 
-Re: Deal Memo
+${emailLine}
 
-Dear ${artistName}:
-
-This proposal sets forth the material terms pursuant to which Sincerely Yours Media LLC ("us" or "Sincerely Yours") will enter into an agreement (the "Agreement") with you.
+This proposal sets forth the material terms pursuant to which Sincerely Yours Media LLC ("us" or "Sincerely Yours") will enter into an agreement with the recording artist professionally known as "${artistName}" ("you" or "Artist") in respect of master recordings ("Masters") featuring their performance.
 
 1. Territory: ${territoryText}.
 
-2. Exclusive Period: Begins on the Effective Date (to be defined in the Agreement) and continues until ${numberToWord(exclusivePeriod)} ${exclusivePeriod == '1' ? 'month' : 'months'} from the release date of the last Master released under the Agreement (the "Term").
+2. Exclusive Period: Begins on the Effective Date (to be defined in the Agreement) and continues until ${exclusivePeriod} months from the release date of the last Master released under the Agreement (the "Term").
 
-3. Recording Commitment: You will deliver ${mastersText} Masters${catalogText} (the "Recording Commitment")${optionText}.
+3. Delivery Commitment: you will Deliver (to be defined in the Agreement) to Sincerely Yours ${dealTypeText} that includes no less than ${mastersText} Masters${catalogText} (the "Initial Period").${optionText}
 
-4. Artist Advance: ${formatNumber(totalAdvance)} for the initial period to be paid to you as follows:
-   • ${formatNumber(firstThird)} upon signing of the Agreement
-   • ${formatNumber(secondThird)} upon commencement of recording the Recording Commitment
-   • ${formatNumber(finalThird)} upon commercial release of the Recording Commitment
+4. Advance: Sincerely Yours would pay you an advance of ${formatNumber(totalAdvance)} during each contract period, which amount would be paid to you as follows: one-third (1/3) of the advance (${formatNumber(firstThird)}) upon signing of this agreement for such contract period, one-third (1/3) of the advance (${formatNumber(secondThird)}) following Delivery of cleared records for such contract period, and the final one-third (1/3) of the advance (${formatNumber(finalThird)}) upon commercial release of the recording commitment for such contract period.
 
-5. Recording Budget: In addition, Sincerely Yours would make available a budget of up to ${formatNumber(recordingBudget)} (the "Recording Budget") to be used in connection with recording costs, which amount would be administered by Sincerely Yours. The Recording Budget will be deemed a recoupable advance against your share of Net Profits.
+5. Recording Costs: Sincerely Yours would make available a budget of up to ${formatNumber(recordingBudget)} to be used in connection with recording costs during each Contract Period, which amount would be administered by Sincerely Yours.
 
-6. Marketing Fund: ${formatNumber(marketingBudget)} drawdown fund (the "Marketing Fund") to be used, at our sole discretion, for marketing, advertising and promotion costs in connection with the Recording Commitment. The Marketing Fund will be deemed a recoupable advance against your share of Net Profits.
+6. Marketing Costs: ${formatNumber(marketingBudget)} drawdown fund (the "Advance") to be used, at our sole discretion, for marketing, advertising and promotion costs in connection with the Recording Commitment during each contract period. The Advance will be deemed a recoupable advance against your share of Net Profits.
 
 7. Profits: ${profitsSection}
 
 8. Accounting: Semi-annually, within 90 days of the applicable accounting period.
 
-9. Rights/Licensing Period: Sincerely Yours shall have the exclusive right during the Licensing Period (defined below) to exploit the Masters made during and/or prior to the Term and delivered during the Term. "Licensing Period" means the period commencing on the Effective Date and continues until the later of: (A) ${numberToWord(licensingYears)} years following the commencement of the Term; or (B) the end of the semi-annual accounting period during which your royalty account became fully recouped.
+9. Rights;Licensing Period: We shall have the exclusive right during the Licensing Period (defined below) to exploit the Masters made during and/or prior to the Term and Delivered during the Term. "Licensing Period" means the period commencing on the Effective Date and continues until the later of: (A) ${licensingYears == '15' ? 'fifteen (15)' : licensingYears == '25' ? 'twenty five (25)' : licensingYears} years following the commencement of the Term; or (B) the end of the semi-annual accounting period during which your royalty account became fully recouped.
 
-10. First Negotiation/Matching Right: During the Term, and for a period of ${numberToWord(firstNegotiationPeriod)} months following the expiration or termination of the Term, prior to entering into negotiations with any third party with respect to your recording services and/or the rights in and to the masters, you shall first notify Sincerely Yours that you would like to negotiate such an agreement, after which you shall negotiate with Sincerely Yours exclusively for ${numberToWord(negotiationDays)} days.
+10. First Negotiation/Matching Right: During the Term, and for a period of ${firstNegotiationPeriod == '3' ? 'three (3)' : 'six (6)'} months following the expiration or termination of the Term, prior to entering into negotiations with any third party with respect to your recording services and/or the rights in and to the Masters, you shall first notify us that you would like to negotiate such an agreement, after which you shall negotiate with us exclusively for ${negotiationDays} days.
 
-    a. If, by the expiration of such ${negotiationDays}-day period, no agreement is reached between you and us, you may negotiate with third parties an agreement with respect to your recording services and/or the right to exploit Masters, but may not enter into an agreement with any third party other than Sincerely Yours unless you first: (i) notify Sincerely Yours in writing of the material terms of the proposed agreement pursuant to which such rights are to be granted and the identities of all proposed parties to such agreement ("Third-Party Offer"); and (ii) offer to enter into an agreement with Sincerely Yours on the same material financial terms as the Third-Party Offer ("Matching Right").
+    a. If, by the expiration of such ${negotiationDays}-day period, no agreement is reached between you and us, you may negotiate with third parties an agreement with respect to your recording services and/or the right to exploit Masters, but may not enter into an agreement with any third party other than us unless you first: (i) notify us in writing of the material terms of the proposed agreement pursuant to which such rights are to be granted and the identities of all proposed parties to such agreement ("Third-Party Offer"); and (ii) offer to enter into an agreement with us on the same material financial terms as the Third-Party Offer ("Matching Right").
 
-    b. If Sincerely Yours does not accept the third-party offer within ${numberToWord(matchingDays)} business days after Sincerely Yours receive such third-party offer, you may then enter into the agreement set forth in the third-party offer, provided that such agreement is consummated upon the same or better terms (for you) and in the same form set forth in the third-party offer.
+    b. If we do not accept the Third-Party Offer within ${matchingDays == '15' ? 'fifteen (15)' : matchingDays} business days after we receive such Third-Party Offer, you may then enter into the agreement set forth in the Third-Party Offer, provided that such agreement is consummated upon the same or better terms (for you) and in the same form set forth in the Third-Party Offer.
 
 Please note that I must reserve the right for Sincerely Yours senior management to modify the terms suggested herein.
 
-Very truly yours,
+Best,
 
 ${signatory}`;
             
@@ -828,104 +708,149 @@ ${signatory}`;
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF();
             
-            // PDF generation settings
+            // Professional business letter margins and settings
             const leftMargin = 25;
-            const rightMargin = 25;
             const topMargin = 25;
-            const bottomMargin = 25;
-            const pageWidth = doc.internal.pageSize.width;
+            const rightMargin = 25;
             const pageHeight = doc.internal.pageSize.height;
+            const pageWidth = doc.internal.pageSize.width;
             const contentWidth = pageWidth - leftMargin - rightMargin;
             
             let yPos = topMargin;
             const lineHeight = 5;
-            const paragraphSpacing = 8;
+            const paragraphSpacing = 7;
             
-            // Set font
+            // Set professional font
             doc.setFontSize(11);
             doc.setFont("helvetica", "normal");
             
-            // Process text line by line
             const lines = memoText.split('\n');
             
             lines.forEach((line, index) => {
-                // Check if we need a new page
-                if (yPos > pageHeight - bottomMargin) {
+                // Check for page break
+                if (yPos > pageHeight - 25) {
                     doc.addPage();
                     yPos = topMargin;
                 }
                 
-                // Handle date line (right-aligned)
-                if (line.includes('                    ') && index === 0) {
+                // Header block (company name and address) - no special formatting
+                if (index < 4) {
                     doc.setFont("helvetica", "normal");
-                    const dateText = line.trim();
-                    const dateWidth = doc.getTextWidth(dateText);
-                    doc.text(dateText, pageWidth - rightMargin - dateWidth, yPos);
-                    yPos += lineHeight * 2;
-                }
-                // Handle bold headers
-                else if (line.match(/^\d+\./)) {
-                    yPos += paragraphSpacing;
-                    doc.setFont("helvetica", "bold");
-                    const colonIndex = line.indexOf(':');
-                    if (colonIndex > -1) {
-                        const boldPart = line.substring(0, colonIndex + 1);
-                        const regularPart = line.substring(colonIndex + 1);
-                        doc.text(boldPart, leftMargin, yPos);
-                        doc.setFont("helvetica", "normal");
-                        const boldWidth = doc.getTextWidth(boldPart);
-                        const splitText = doc.splitTextToSize(regularPart, contentWidth - boldWidth);
-                        if (splitText.length > 0) {
-                            doc.text(splitText[0], leftMargin + boldWidth, yPos);
-                            for (let i = 1; i < splitText.length; i++) {
-                                yPos += lineHeight;
-                                if (yPos > pageHeight - bottomMargin) {
-                                    doc.addPage();
-                                    yPos = topMargin;
-                                }
-                                doc.text(splitText[i], leftMargin, yPos);
-                            }
-                        }
-                    } else {
-                        doc.text(line, leftMargin, yPos);
-                    }
+                    doc.text(line, leftMargin, yPos);
                     yPos += lineHeight;
                 }
-                // Handle bullet points
-                else if (line.trim().startsWith('•')) {
-                    doc.setFont("helvetica", "normal");
-                    const splitText = doc.splitTextToSize(line.trim(), contentWidth - 10);
-                    splitText.forEach((textLine, i) => {
-                        if (yPos > pageHeight - bottomMargin) {
-                            doc.addPage();
-                            yPos = topMargin;
-                        }
-                        doc.text(textLine, leftMargin + 10, yPos);
-                        yPos += lineHeight;
-                    });
-                }
-                // Handle sub-items
-                else if (line.trim().match(/^\s*[ab]\./)) {
-                    doc.setFont("helvetica", "normal");
-                    const splitText = doc.splitTextToSize(line.trim(), contentWidth - 20);
-                    splitText.forEach((textLine, i) => {
-                        if (yPos > pageHeight - bottomMargin) {
-                            doc.addPage();
-                            yPos = topMargin;
-                        }
-                        doc.text(textLine, leftMargin + 20, yPos);
-                        yPos += lineHeight;
-                    });
-                }
-                // Handle empty lines
+                // Empty lines for spacing
                 else if (line.trim() === '') {
-                    yPos += lineHeight * 0.5;
+                    yPos += paragraphSpacing;
                 }
-                // Handle regular text
-                else if (line.trim()) {
+                // Date line
+                else if (line.startsWith('Date:')) {
+                    doc.setFont("helvetica", "normal");
+                    doc.text(line, leftMargin, yPos);
+                    yPos += lineHeight;
+                }
+                // Via Email line
+                else if (line.startsWith('VIA EMAIL:')) {
+                    doc.setFont("helvetica", "normal");
+                    doc.text(line, leftMargin, yPos);
+                    yPos += lineHeight;
+                }
+                // Introduction paragraph
+                else if (line.includes('This proposal sets forth')) {
+                    doc.setFont("helvetica", "normal");
                     const splitText = doc.splitTextToSize(line, contentWidth);
-                    splitText.forEach((textLine) => {
-                        if (yPos > pageHeight - bottomMargin) {
+                    splitText.forEach(textLine => {
+                        if (yPos > pageHeight - 25) {
+                            doc.addPage();
+                            yPos = topMargin;
+                        }
+                        doc.text(textLine, leftMargin, yPos);
+                        yPos += lineHeight;
+                    });
+                }
+                // Numbered sections with bold labels
+                else if (line.match(/^\d+\./)) {
+                    // Find the colon to separate label from content
+                    const colonIndex = line.indexOf(':');
+                    if (colonIndex > -1) {
+                        const numberAndLabel = line.substring(0, colonIndex + 1);
+                        const content = line.substring(colonIndex + 1).trim();
+                        
+                        // Split long lines for wrapping
+                        const fullLine = numberAndLabel + ' ' + content;
+                        const splitText = doc.splitTextToSize(fullLine, contentWidth);
+                        
+                        splitText.forEach((textLine, lineIndex) => {
+                            if (yPos > pageHeight - 25) {
+                                doc.addPage();
+                                yPos = topMargin;
+                            }
+                            
+                            if (lineIndex === 0) {
+                                // First line: bold the section label
+                                const labelPart = numberAndLabel;
+                                const remainingPart = textLine.substring(labelPart.length);
+                                
+                                // Draw the label in bold
+                                doc.setFont("helvetica", "bold");
+                                doc.text(labelPart, leftMargin, yPos);
+                                
+                                // Draw the rest in normal
+                                const labelWidth = doc.getTextWidth(labelPart);
+                                doc.setFont("helvetica", "normal");
+                                doc.text(remainingPart, leftMargin + labelWidth, yPos);
+                            } else {
+                                // Continuation lines
+                                doc.setFont("helvetica", "normal");
+                                doc.text(textLine, leftMargin, yPos);
+                            }
+                            yPos += lineHeight;
+                        });
+                    } else {
+                        // No colon found, treat as regular line
+                        const splitText = doc.splitTextToSize(line, contentWidth);
+                        splitText.forEach(textLine => {
+                            if (yPos > pageHeight - 25) {
+                                doc.addPage();
+                                yPos = topMargin;
+                            }
+                            doc.text(textLine, leftMargin, yPos);
+                            yPos += lineHeight;
+                        });
+                    }
+                }
+                // Sub-sections (a. b. etc)
+                else if (line.match(/^\s+[a-z]\./)) {
+                    doc.setFont("helvetica", "normal");
+                    const splitText = doc.splitTextToSize(line, contentWidth - 10);
+                    splitText.forEach(textLine => {
+                        if (yPos > pageHeight - 25) {
+                            doc.addPage();
+                            yPos = topMargin;
+                        }
+                        doc.text(textLine, leftMargin + 10, yPos); // Indent subsections
+                        yPos += lineHeight;
+                    });
+                }
+                // Closing lines
+                else if (line.startsWith('Please note') || line.startsWith('Best,')) {
+                    doc.setFont("helvetica", "normal");
+                    const splitText = doc.splitTextToSize(line, contentWidth);
+                    splitText.forEach(textLine => {
+                        if (yPos > pageHeight - 25) {
+                            doc.addPage();
+                            yPos = topMargin;
+                        }
+                        doc.text(textLine, leftMargin, yPos);
+                        yPos += lineHeight;
+                    });
+                }
+                // Signature name
+                else {
+                    doc.setFont("helvetica", "normal");
+                    const splitText = doc.splitTextToSize(line, contentWidth);
+                    splitText.forEach(textLine => {
+                        if (yPos > pageHeight - 25) {
                             doc.addPage();
                             yPos = topMargin;
                         }
@@ -935,7 +860,6 @@ ${signatory}`;
                 }
             });
             
-            // Save the PDF
             const artistName = document.getElementById('artistName').value.replace(/\s+/g, '_');
             const date = document.getElementById('date').value;
             const filename = `Deal_Memo_${artistName}_${date}.pdf`;
@@ -969,22 +893,13 @@ ${signatory}`;
             // Set today's date
             document.getElementById('date').valueAsDate = new Date();
             
-            // Initialize Google Sign-In
-            initializeGoogleSignIn();
-            
-            // Load Google API
-            gapi.load('client', () => {
-                gapi.client.init({
-                    apiKey: API_KEY,
-                    discoveryDocs: DISCOVERY_DOCS,
-                });
-            });
+            // Initialize Google API
+            gapi.load('client', initializeGoogleAPI);
             
             // Attach button handlers
             document.getElementById('generatePdfBtn').addEventListener('click', generateMemo);
             document.getElementById('copyBtn').addEventListener('click', generateAndCopy);
             document.getElementById('createGoogleDocBtn').addEventListener('click', createGoogleDoc);
-            document.getElementById('signOutBtn').addEventListener('click', signOut);
         });
     </script>
 </body>
