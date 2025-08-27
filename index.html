@@ -700,17 +700,84 @@ ${signatory}`;
             return memo;
         }
         
-        // Generate PDF (include the complete generateMemo function from original)
+        // Generate PDF
         function generateMemo() {
-            // [Include complete generateMemo function]
             const memoText = buildMemoText();
             if (!memoText) return;
             
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF();
             
-            // [Include all PDF generation code from original]
-            // ... PDF generation code ...
+            let yPos = 20;
+            const lineHeight = 7;
+            const margin = 20;
+            const pageWidth = doc.internal.pageSize.width;
+            const contentWidth = pageWidth - (margin * 2);
+            
+            const lines = memoText.split('\n');
+            doc.setFontSize(11);
+            
+            lines.forEach(line => {
+                if (yPos > 270) {
+                    doc.addPage();
+                    yPos = 20;
+                }
+                
+                // Check for bold markers and handle accordingly
+                if (line.includes('**')) {
+                    // Parse line with bold sections
+                    let remainingText = line;
+                    let xPos = margin;
+                    
+                    while (remainingText.includes('**')) {
+                        const firstBold = remainingText.indexOf('**');
+                        const secondBold = remainingText.indexOf('**', firstBold + 2);
+                        
+                        if (secondBold > -1) {
+                            // Text before bold
+                            if (firstBold > 0) {
+                                doc.setFont(undefined, 'normal');
+                                const beforeText = remainingText.substring(0, firstBold);
+                                doc.text(beforeText, xPos, yPos);
+                                xPos += doc.getTextWidth(beforeText);
+                            }
+                            
+                            // Bold text
+                            doc.setFont(undefined, 'bold');
+                            const boldText = remainingText.substring(firstBold + 2, secondBold);
+                            doc.text(boldText, xPos, yPos);
+                            xPos += doc.getTextWidth(boldText);
+                            doc.setFont(undefined, 'normal');
+                            
+                            // Continue with remaining text
+                            remainingText = remainingText.substring(secondBold + 2);
+                        } else {
+                            // No closing bold marker
+                            doc.text(remainingText, xPos, yPos);
+                            break;
+                        }
+                    }
+                    
+                    // Any remaining text after last bold
+                    if (remainingText.length > 0) {
+                        doc.setFont(undefined, 'normal');
+                        doc.text(remainingText, xPos, yPos);
+                    }
+                    
+                    yPos += lineHeight;
+                } else {
+                    // Regular line without bold
+                    const splitText = doc.splitTextToSize(line, contentWidth);
+                    splitText.forEach(textLine => {
+                        if (yPos > 270) {
+                            doc.addPage();
+                            yPos = 20;
+                        }
+                        doc.text(textLine, margin, yPos);
+                        yPos += lineHeight;
+                    });
+                }
+            });
             
             const artistName = document.getElementById('artistName').value.replace(/\s+/g, '_');
             const date = document.getElementById('date').value;
