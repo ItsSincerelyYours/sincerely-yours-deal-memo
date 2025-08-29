@@ -7,6 +7,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://accounts.google.com/gsi/client" async defer></script>
     <script src="https://apis.google.com/js/api.js"></script>
+    <script src="config.js"></script>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -354,9 +355,10 @@
         const DISCOVERY_DOCS = ['https://docs.googleapis.com/$discovery/rest?version=v1'];
         const SCOPES = 'https://www.googleapis.com/auth/documents https://www.googleapis.com/auth/drive.file https://www.googleapis.com/auth/drive';
         
-        // Asana Configuration - UPDATE THESE LOCALLY
-        const ASANA_CONFIG = {
-            PAT: 'PASTE_YOUR_ASANA_PAT_HERE', // Your Asana Personal Access Token
+        // Asana Configuration - Loaded from config.js
+        // If config.js doesn't exist or isn't loaded, use defaults
+        const ASANA_CONFIG = window.ASANA_CONFIG || {
+            PAT: 'NOT_CONFIGURED', // Set in config.js
             PROJECT_ID: '1208632760893835', // Artist Pipeline project
             WORKSPACE_ID: '1208285122467189', // From your URL
             SECTION_NAME: 'DEALS PENDING APPROVAL',
