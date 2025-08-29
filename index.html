@@ -463,12 +463,19 @@
         
         // Asana Integration Functions
         async function searchAsanaForArtist(artistName) {
-            if (!ASANA_CONFIG.PAT || ASANA_CONFIG.PAT === 'PASTE_YOUR_ASANA_PAT_HERE') {
-                console.log('Asana PAT not configured, skipping integration');
-                return null;
+            if (!ASANA_CONFIG.PAT || ASANA_CONFIG.PAT === 'PASTE_YOUR_ASANA_PAT_HERE' || ASANA_CONFIG.PAT === 'NOT_CONFIGURED') {
+                const pat = prompt('Please enter your Asana Personal Access Token (PAT):\n\nYou can get this from: https://app.asana.com/0/my-apps\nCreate a new PAT and paste it here.');
+                if (pat) {
+                    localStorage.setItem('asana_pat', pat);
+                    ASANA_CONFIG.PAT = pat;
+                } else {
+                    console.log('Asana PAT not configured, skipping integration');
+                    return null;
+                }
             }
             
             try {
+                console.log('Using Asana PAT:', ASANA_CONFIG.PAT.substring(0, 10) + '...');
                 // Search for tasks in the Artist Pipeline project
                 const response = await fetch(`https://app.asana.com/api/1.0/projects/${ASANA_CONFIG.PROJECT_ID}/tasks`, {
                     headers: {
@@ -478,7 +485,12 @@
                 });
                 
                 if (!response.ok) {
-                    throw new Error('Failed to fetch Asana tasks');
+                    if (response.status === 401) {
+                        // Clear invalid PAT
+                        localStorage.removeItem('asana_pat');
+                        console.error('Asana PAT is invalid or expired. Please refresh and enter a new PAT.');
+                    }
+                    throw new Error(`Failed to fetch Asana tasks: ${response.status}`);
                 }
                 
                 const data = await response.json();
