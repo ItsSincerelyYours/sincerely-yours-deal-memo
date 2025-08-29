@@ -613,7 +613,7 @@
                 
                 try {
                     // Add the document to the folder
-                    await fetch(`https://www.googleapis.com/drive/v3/files/${documentId}?addParents=${FOLDER_ID}&removeParents=root`, {
+                    const moveResponse = await fetch(`https://www.googleapis.com/drive/v3/files/${documentId}?addParents=${FOLDER_ID}&removeParents=root`, {
                         method: 'PATCH',
                         headers: {
                             'Authorization': `Bearer ${accessToken}`,
@@ -621,8 +621,14 @@
                         }
                     });
                     
+                    if (!moveResponse.ok) {
+                        console.error('Failed to move document to folder:', await moveResponse.text());
+                    } else {
+                        console.log('Document successfully moved to Deal Memo folder');
+                    }
+                    
                     // Set sharing permissions - anyone with link can edit
-                    await fetch(`https://www.googleapis.com/drive/v3/files/${documentId}/permissions`, {
+                    const permResponse = await fetch(`https://www.googleapis.com/drive/v3/files/${documentId}/permissions`, {
                         method: 'POST',
                         headers: {
                             'Authorization': `Bearer ${accessToken}`,
@@ -634,6 +640,12 @@
                             allowFileDiscovery: false
                         })
                     });
+                    
+                    if (!permResponse.ok) {
+                        console.error('Failed to set permissions:', await permResponse.text());
+                    } else {
+                        console.log('Permissions set successfully');
+                    }
                 } catch (moveError) {
                     console.error('Error moving document to folder or setting permissions:', moveError);
                     // Continue even if move/permissions fail - document is still created
