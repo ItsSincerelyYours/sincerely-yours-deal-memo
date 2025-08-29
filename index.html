@@ -480,9 +480,13 @@
                 const data = await response.json();
                 const tasks = data.data;
                 
+                console.log(`Found ${tasks.length} tasks in Artist Pipeline project`);
+                console.log('First 5 task names:', tasks.slice(0, 5).map(t => t.name));
+                
                 // Find matching artist task (case-insensitive, smart match)
                 const normalizedSearch = artistName.toLowerCase().trim();
                 const searchWords = normalizedSearch.split(/\s+/); // Split into words
+                console.log(`Searching for: "${normalizedSearch}" (words: ${searchWords.join(', ')})`);
                 
                 const matchingTask = tasks.find(task => {
                     const taskName = task.name.toLowerCase().trim();
@@ -665,12 +669,17 @@
                 showSuccess(`Google Doc created successfully! Opening in new tab...`);
                 
                 // Update Asana task if artist is found
+                console.log(`Searching Asana for artist: "${artistName}"`);
                 const asanaTask = await searchAsanaForArtist(artistName);
                 if (asanaTask) {
-                    console.log(`Found Asana task for ${artistName}:`, asanaTask.name);
+                    console.log(`✓ Found Asana task for ${artistName}:`, asanaTask.name);
+                    console.log(`Task GID: ${asanaTask.gid}`);
+                    console.log(`Updating task with Google Doc URL: ${docUrl}`);
                     await updateAsanaTask(asanaTask.gid, docUrl, artistName);
+                    console.log(`✓ Asana task updated successfully`);
                 } else {
-                    console.log(`No Asana task found for artist: ${artistName}`);
+                    console.log(`✗ No Asana task found for artist: "${artistName}"`);
+                    console.log(`Try checking the exact task name in Asana`);
                 }
                 
             } catch (error) {
