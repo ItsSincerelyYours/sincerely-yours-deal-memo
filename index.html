@@ -655,17 +655,17 @@
             const profitsSection = `${netProfit}% of Net Profits (to be defined in the Agreement) in connection with the Masters, and ${syncProfit}% of Net Profits in connection with revenue collected from third party sync licenses.${merchText} Unless otherwise agreed between the parties in writing, you will be responsible for paying all producers, mixers and side artists in connection with the Masters.`;
             
             // Build the complete memo (same as original)
-            const memo = `Sincerely Yours Media LLC
-c/o Granderson Des Rochers LLP
-150 S. Rodeo Drive, Suite 300
-Beverly Hills, CA 90212
+            const memo = `                                   **__Sincerely Yours Media LLC__**
+                                    c/o Granderson Des Rochers LLP
+                                       150 S. Rodeo Drive, Suite 300
+                                         Beverly Hills, CA 90212
 
 
 Date: ${formatDate(date)}
 
 ${emailLine}
 
-This proposal sets forth the material terms pursuant to which Sincerely Yours Media LLC ("us" or "Sincerely Yours") will enter into an agreement with the recording artist professionally known as "${artistName}" ("you" or "Artist") in respect of master recordings ("Masters") featuring their performance.
+*This proposal sets forth the material terms pursuant to which Sincerely Yours Media LLC ("us" or "Sincerely Yours") will enter into an agreement with the recording artist professionally known as "${artistName}" ("you" or "Artist") in respect of master recordings ("Masters") featuring their performance.*
 
 1. Territory: ${territoryText}.
 
@@ -700,17 +700,124 @@ ${signatory}`;
             return memo;
         }
         
-        // Generate PDF (include the complete generateMemo function from original)
+        // Generate PDF
         function generateMemo() {
-            // [Include complete generateMemo function]
             const memoText = buildMemoText();
             if (!memoText) return;
             
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF();
             
-            // [Include all PDF generation code from original]
-            // ... PDF generation code ...
+            let yPos = 20;
+            const lineHeight = 7;
+            const margin = 20;
+            const pageWidth = doc.internal.pageSize.width;
+            const contentWidth = pageWidth - (margin * 2);
+            
+            const lines = memoText.split('\n');
+            doc.setFontSize(11);
+            
+            lines.forEach((line, index) => {
+                if (yPos > 270) {
+                    doc.addPage();
+                    yPos = 20;
+                }
+                
+                // Check if line should be centered (has leading spaces)
+                const isCentered = line.trim() !== line && line.includes('Sincerely Yours Media LLC') || 
+                                 line.includes('c/o Granderson') || 
+                                 line.includes('150 S. Rodeo') || 
+                                 line.includes('Beverly Hills');
+                
+                // Check for italic text (wrapped in *)
+                const isItalic = line.startsWith('*') && line.endsWith('*');
+                
+                if (isItalic) {
+                    // Remove asterisks and set italic
+                    const italicText = line.substring(1, line.length - 1);
+                    doc.setFont(undefined, 'italic');
+                    const splitText = doc.splitTextToSize(italicText, contentWidth);
+                    splitText.forEach(textLine => {
+                        if (yPos > 270) {
+                            doc.addPage();
+                            yPos = 20;
+                        }
+                        doc.text(textLine, margin, yPos);
+                        yPos += lineHeight;
+                    });
+                    doc.setFont(undefined, 'normal');
+                } else if (line.includes('**__') && line.includes('__**')) {
+                    // Handle bold and underlined text (Sincerely Yours Media LLC header)
+                    const cleanLine = line.replace(/\*\*__/g, '').replace(/__\*\*/g, '').trim();
+                    doc.setFont(undefined, 'bold');
+                    const textWidth = doc.getTextWidth(cleanLine);
+                    const xPos = (pageWidth - textWidth) / 2; // Center the text
+                    doc.text(cleanLine, xPos, yPos);
+                    // Add underline
+                    doc.line(xPos, yPos + 1, xPos + textWidth, yPos + 1);
+                    doc.setFont(undefined, 'normal');
+                    yPos += lineHeight;
+                } else if (isCentered) {
+                    // Center aligned text
+                    const trimmedLine = line.trim();
+                    const textWidth = doc.getTextWidth(trimmedLine);
+                    const xPos = (pageWidth - textWidth) / 2;
+                    doc.text(trimmedLine, xPos, yPos);
+                    yPos += lineHeight;
+                } else if (line.includes('**')) {
+                    // Handle bold text
+                    let remainingText = line;
+                    let xPos = margin;
+                    
+                    while (remainingText.includes('**')) {
+                        const firstBold = remainingText.indexOf('**');
+                        const secondBold = remainingText.indexOf('**', firstBold + 2);
+                        
+                        if (secondBold > -1) {
+                            // Text before bold
+                            if (firstBold > 0) {
+                                doc.setFont(undefined, 'normal');
+                                const beforeText = remainingText.substring(0, firstBold);
+                                doc.text(beforeText, xPos, yPos);
+                                xPos += doc.getTextWidth(beforeText);
+                            }
+                            
+                            // Bold text
+                            doc.setFont(undefined, 'bold');
+                            const boldText = remainingText.substring(firstBold + 2, secondBold);
+                            doc.text(boldText, xPos, yPos);
+                            xPos += doc.getTextWidth(boldText);
+                            doc.setFont(undefined, 'normal');
+                            
+                            // Continue with remaining text
+                            remainingText = remainingText.substring(secondBold + 2);
+                        } else {
+                            // No closing bold marker
+                            doc.text(remainingText, xPos, yPos);
+                            break;
+                        }
+                    }
+                    
+                    // Any remaining text after last bold
+                    if (remainingText.length > 0) {
+                        doc.setFont(undefined, 'normal');
+                        doc.text(remainingText, xPos, yPos);
+                    }
+                    
+                    yPos += lineHeight;
+                } else {
+                    // Regular line without special formatting
+                    const splitText = doc.splitTextToSize(line, contentWidth);
+                    splitText.forEach(textLine => {
+                        if (yPos > 270) {
+                            doc.addPage();
+                            yPos = 20;
+                        }
+                        doc.text(textLine, margin, yPos);
+                        yPos += lineHeight;
+                    });
+                }
+            });
             
             const artistName = document.getElementById('artistName').value.replace(/\s+/g, '_');
             const date = document.getElementById('date').value;
