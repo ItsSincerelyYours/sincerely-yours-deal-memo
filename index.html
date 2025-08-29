@@ -607,7 +607,7 @@
                 const doc = await createResponse.json();
                 const documentId = doc.documentId;
                 
-                // Move the document to the Deal Memo folder (restricted access)
+                // Move the document to the Deal Memo folder and set domain permissions
                 const FOLDER_ID = '1-C1xWX-H48w0TKJITw957Cbm92iOxmpd';
                 
                 try {
@@ -622,16 +622,32 @@
                     
                     if (!moveResponse.ok) {
                         console.error('Failed to move document to folder:', await moveResponse.text());
-                        console.log('Document created in My Drive. Move to Deal Memo folder manually.');
                     } else {
                         console.log('Document successfully moved to Deal Memo folder');
                     }
                     
-                    // Don't set "anyone with link" permissions - keep folder's restricted access
-                    console.log('Document inherits folder permissions (team access only)');
+                    // Set permissions to anyone at sincerely-yours.xyz can edit
+                    const permResponse = await fetch(`https://www.googleapis.com/drive/v3/files/${documentId}/permissions`, {
+                        method: 'POST',
+                        headers: {
+                            'Authorization': `Bearer ${accessToken}`,
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            role: 'writer',
+                            type: 'domain',
+                            domain: 'sincerely-yours.xyz',
+                            allowFileDiscovery: true
+                        })
+                    });
+                    
+                    if (!permResponse.ok) {
+                        console.error('Failed to set domain permissions:', await permResponse.text());
+                    } else {
+                        console.log('Permissions set to: Anyone at sincerely-yours.xyz can edit');
+                    }
                 } catch (error) {
-                    console.error('Error moving document to folder:', error);
-                    console.log('Document created in My Drive. Move to Deal Memo folder manually.');
+                    console.error('Error setting up document:', error);
                 }
                 
                 // Format the content for Google Docs
