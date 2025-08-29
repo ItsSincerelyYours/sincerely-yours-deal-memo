@@ -458,8 +458,30 @@
             }
         }
         
+        // Log activity to Vercel backend
+        async function logToVercel(email, name, status) {
+            try {
+                await fetch('/api/log-activity', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        email: email,
+                        name: name,
+                        status: status,
+                        app: 'US Deal Memo',
+                        timestamp: new Date().toISOString(),
+                        userAgent: navigator.userAgent
+                    })
+                });
+            } catch (error) {
+                console.error('Failed to log to backend:', error);
+            }
+        }
+        
         // Handle Google Sign-In response
-        function handleCredentialResponse(response) {
+        async function handleCredentialResponse(response) {
             // Decode JWT to get user info
             const responsePayload = decodeJwtResponse(response.credential);
             
@@ -469,6 +491,8 @@
             
             if (emailDomain !== 'sincerely-yours.xyz') {
                 showLoginError(`Access denied. This tool is only available to Sincerely Yours team members. You are signed in as ${email}`);
+                // Log denied access to Vercel
+                await logToVercel(email, responsePayload.name, 'Access Denied');
                 return;
             }
             
@@ -478,6 +502,9 @@
                 name: responsePayload.name,
                 picture: responsePayload.picture
             };
+            
+            // Log successful login to Vercel
+            await logToVercel(email, responsePayload.name, 'Login Success');
             
             // Request additional permissions for Google Docs
             tokenClient.requestAccessToken();
