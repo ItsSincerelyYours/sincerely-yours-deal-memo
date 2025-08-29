@@ -204,11 +204,6 @@
                     <label>Agreement Date *</label>
                     <input type="date" id="date" required>
                 </div>
-                <div>
-                    <label>Email (optional)</label>
-                    <input type="email" id="email" placeholder="Leave blank if sending via email">
-                    <div class="info-text">Leave blank for blank line</div>
-                </div>
             </div>
         </div>
         
@@ -577,8 +572,10 @@
                     });
                 }
                 
-                // Center align other header lines
-                if (lineIndex >= 1 && lineIndex <= 3) {
+                // Center align other header lines (c/o, address, city)
+                if ((lineIndex === 1 && line.includes('c/o Granderson')) ||
+                    (lineIndex === 2 && line.includes('150 S. Rodeo')) ||
+                    (lineIndex === 3 && line.includes('Beverly Hills'))) {
                     requests.push({
                         updateParagraphStyle: {
                             range: {
@@ -698,7 +695,6 @@
             // Get all values
             const artistName = document.getElementById('artistName').value;
             const date = document.getElementById('date').value;
-            const email = document.getElementById('email').value;
             const dealType = document.getElementById('dealType').value;
             const initialMasters = document.getElementById('initialMasters').value;
             const optionPeriods = document.getElementById('optionPeriods').value;
@@ -757,7 +753,6 @@
                 optionText = ` In addition, Sincerely Yours would have ${optionWord} to extend the agreement to include an additional ${optionMastersText} in respect of such option.`;
             }
             
-            const emailLine = email ? `VIA EMAIL: ${email}` : 'VIA EMAIL: ____________________';
             const merchText = merchShare ? ` Additionally, ${merchShare}% of Net Profits in connection with merchandise revenue.` : '';
             const profitsSection = `${netProfit}% of Net Profits (to be defined in the Agreement) in connection with the Masters, and ${syncProfit}% of Net Profits in connection with revenue collected from third party sync licenses.${merchText} Unless otherwise agreed between the parties in writing, you will be responsible for paying all producers, mixers and side artists in connection with the Masters.`;
             
@@ -769,8 +764,6 @@
 
 
 Date: ${formatDate(date)}
-
-${emailLine}
 
 *This proposal sets forth the material terms pursuant to which Sincerely Yours Media LLC ("us" or "Sincerely Yours") will enter into an agreement with the recording artist professionally known as "${artistName}" ("you" or "Artist") in respect of master recordings ("Masters") featuring their performance.*
 
