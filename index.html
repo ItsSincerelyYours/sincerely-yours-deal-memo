@@ -175,7 +175,7 @@
 <body>
     <div class="container">
         <h1>📄 Sincerely Yours Media - Deal Memo Generator</h1>
-        <div class="subtitle">Recording Agreement Deal Memo Template with Google Docs Integration</div>
+        <div class="subtitle">Recording Agreement Deal Memo Generator for Google Docs</div>
         
         <div class="google-status" id="googleStatus">
             <span>🔐</span>
@@ -340,8 +340,6 @@
         </div>
         
         <div class="button-group">
-            <button id="generatePdfBtn">Generate Deal Memo PDF</button>
-            <button class="copy-btn" id="copyBtn">Generate & Copy Text</button>
             <button class="google-btn" id="createGoogleDocBtn">Create Google Doc</button>
         </div>
         
@@ -952,9 +950,7 @@ ${signatory}`;
             // Initialize Google API
             gapi.load('client', initializeGoogleAPI);
             
-            // Attach button handlers
-            document.getElementById('generatePdfBtn').addEventListener('click', generateMemo);
-            document.getElementById('copyBtn').addEventListener('click', generateAndCopy);
+            // Attach button handler
             document.getElementById('createGoogleDocBtn').addEventListener('click', createGoogleDoc);
         });
     </script>
