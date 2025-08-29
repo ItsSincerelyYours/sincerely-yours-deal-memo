@@ -535,9 +535,9 @@
             let currentIndex = 1;
             
             lines.forEach((line, lineIndex) => {
-                // Format the header (first line - Sincerely Yours Media LLC)
+                // Format and center align all header lines (first 4 lines)
                 if (lineIndex === 0 && line.includes('Sincerely Yours Media LLC')) {
-                    // Make it bold and underlined
+                    // First line - bold and underlined
                     requests.push({
                         updateTextStyle: {
                             range: {
@@ -551,7 +551,7 @@
                             fields: 'bold,underline'
                         }
                     });
-                    // Center align this line
+                    // Center align
                     requests.push({
                         updateParagraphStyle: {
                             range: {
@@ -564,12 +564,8 @@
                             fields: 'alignment'
                         }
                     });
-                }
-                
-                // Center align the other header lines (c/o, address, city)
-                if ((lineIndex === 1 && line.includes('c/o Granderson')) ||
-                    (lineIndex === 2 && line.includes('150 S. Rodeo')) ||
-                    (lineIndex === 3 && line.includes('Beverly Hills'))) {
+                } else if (lineIndex >= 1 && lineIndex <= 3) {
+                    // Center align the other header lines (lines 2-4)
                     requests.push({
                         updateParagraphStyle: {
                             range: {
@@ -751,10 +747,10 @@
             const profitsSection = `${netProfit}% of Net Profits (to be defined in the Agreement) in connection with the Masters, and ${syncProfit}% of Net Profits in connection with revenue collected from third party sync licenses.${merchText} Unless otherwise agreed between the parties in writing, you will be responsible for paying all producers, mixers and side artists in connection with the Masters.`;
             
             // Build the complete memo (same as original)
-            const memo = `                                   **__Sincerely Yours Media LLC__**
-                                    c/o Granderson Des Rochers LLP
-                                       150 S. Rodeo Drive, Suite 300
-                                         Beverly Hills, CA 90212
+            const memo = `Sincerely Yours Media LLC
+c/o Granderson Des Rochers LLP
+150 S. Rodeo Drive, Suite 300
+Beverly Hills, CA 90212
 
 
 Date: ${formatDate(date)}
