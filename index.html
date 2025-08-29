@@ -179,13 +179,20 @@
         
         <div class="google-status" id="googleStatus">
             <span>🔐</span>
-            <span id="statusText">Not connected to Google</span>
-            <button id="googleSignIn" class="google-btn" style="margin: 0; padding: 8px 20px;">Connect Google Account</button>
+            <span id="statusText">Not authenticated</span>
+            <button id="googleSignIn" class="google-btn" style="margin: 0; padding: 8px 20px;">Sign in with Google</button>
         </div>
         
         <div class="success-message" id="successMessage"></div>
         <div class="error-message" id="errorMessage"></div>
         
+        <div id="authRequired" style="padding: 40px; text-align: center; background: #f9f9f9; border-radius: 10px; margin: 30px 0;">
+            <h2 style="color: #6B46C1;">Authentication Required</h2>
+            <p style="color: #666; margin: 20px 0;">Please sign in with your Sincerely Yours Google account to access the Deal Memo Generator.</p>
+            <p style="color: #999; font-size: 14px;">Access is restricted to @sincerely-yours.xyz email accounts.</p>
+        </div>
+        
+        <div id="formContainer" style="display: none;">
         <div class="form-section">
             <h3>Basic Information</h3>
             <div class="form-row">
@@ -344,6 +351,7 @@
         </div>
         
         <div id="output"></div>
+        </div>
     </div>
     
     <script>
@@ -360,11 +368,36 @@
         function initializeGoogleAPI() {
             tokenClient = google.accounts.oauth2.initTokenClient({
                 client_id: CLIENT_ID,
-                scope: SCOPES,
-                callback: (response) => {
+                scope: SCOPES + ' https://www.googleapis.com/auth/userinfo.email',
+                callback: async (response) => {
                     accessToken = response.access_token;
-                    updateGoogleStatus(true);
-                    showSuccess('Connected to Google successfully!');
+                    // Verify user email domain
+                    try {
+                        const userResponse = await fetch('https://www.googleapis.com/oauth2/v2/userinfo', {
+                            headers: {
+                                'Authorization': `Bearer ${accessToken}`
+                            }
+                        });
+                        const userInfo = await userResponse.json();
+                        
+                        if (userInfo && userInfo.email) {
+                            const emailDomain = userInfo.email.split('@')[1];
+                            if (emailDomain === 'sincerely-yours.xyz') {
+                                updateGoogleStatus(true);
+                                showSuccess('Welcome to Sincerely Yours Deal Memo Generator!');
+                                document.getElementById('formContainer').style.display = 'block';
+                                document.getElementById('authRequired').style.display = 'none';
+                            } else {
+                                showError('Access denied. This tool is only available to Sincerely Yours team members.');
+                                google.accounts.oauth2.revoke(accessToken);
+                                accessToken = null;
+                                updateGoogleStatus(false);
+                            }
+                        }
+                    } catch (error) {
+                        console.error('Error verifying user:', error);
+                        showError('Failed to verify user. Please try again.');
+                    }
                 },
             });
         }
@@ -389,12 +422,14 @@
             
             if (connected) {
                 statusDiv.classList.add('connected');
-                statusText.textContent = 'Connected to Google';
-                signInBtn.textContent = 'Disconnect';
+                statusText.textContent = 'Authenticated';
+                signInBtn.textContent = 'Sign Out';
             } else {
                 statusDiv.classList.remove('connected');
-                statusText.textContent = 'Not connected to Google';
-                signInBtn.textContent = 'Connect Google Account';
+                statusText.textContent = 'Not authenticated';
+                signInBtn.textContent = 'Sign in with Google';
+                document.getElementById('formContainer').style.display = 'none';
+                document.getElementById('authRequired').style.display = 'block';
             }
         }
         
