@@ -553,6 +553,37 @@
                             fields: 'bold,underline'
                         }
                     });
+                    // Center align this line
+                    requests.push({
+                        updateParagraphStyle: {
+                            range: {
+                                startIndex: currentIndex,
+                                endIndex: currentIndex + line.length
+                            },
+                            paragraphStyle: {
+                                alignment: 'CENTER'
+                            },
+                            fields: 'alignment'
+                        }
+                    });
+                }
+                
+                // Center align the other header lines (c/o, address, city)
+                if ((lineIndex === 1 && line.includes('c/o Granderson')) ||
+                    (lineIndex === 2 && line.includes('150 S. Rodeo')) ||
+                    (lineIndex === 3 && line.includes('Beverly Hills'))) {
+                    requests.push({
+                        updateParagraphStyle: {
+                            range: {
+                                startIndex: currentIndex,
+                                endIndex: currentIndex + line.length
+                            },
+                            paragraphStyle: {
+                                alignment: 'CENTER'
+                            },
+                            fields: 'alignment'
+                        }
+                    });
                 }
                 
                 // Italicize the proposal introduction paragraph
@@ -722,10 +753,10 @@
             const profitsSection = `${netProfit}% of Net Profits (to be defined in the Agreement) in connection with the Masters, and ${syncProfit}% of Net Profits in connection with revenue collected from third party sync licenses.${merchText} Unless otherwise agreed between the parties in writing, you will be responsible for paying all producers, mixers and side artists in connection with the Masters.`;
             
             // Build the complete memo (same as original)
-            const memo = `**__Sincerely Yours Media LLC__**
-c/o Granderson Des Rochers LLP
-150 S. Rodeo Drive, Suite 300
-Beverly Hills, CA 90212
+            const memo = `                                   **__Sincerely Yours Media LLC__**
+                                    c/o Granderson Des Rochers LLP
+                                       150 S. Rodeo Drive, Suite 300
+                                         Beverly Hills, CA 90212
 
 
 Date: ${formatDate(date)}
@@ -788,10 +819,24 @@ ${signatory}`;
                     yPos = 20;
                 }
                 
+                // Check if this is a header line that should be centered
+                const isCentered = line.trim() !== line && (
+                    line.includes('c/o Granderson') || 
+                    line.includes('150 S. Rodeo') || 
+                    line.includes('Beverly Hills')
+                );
+                
                 // Check for italic text (wrapped in *)
                 const isItalic = line.startsWith('*') && line.endsWith('*');
                 
-                if (isItalic) {
+                if (isCentered) {
+                    // Center aligned text (header address lines)
+                    const trimmedLine = line.trim();
+                    const textWidth = doc.getTextWidth(trimmedLine);
+                    const xPos = (pageWidth - textWidth) / 2;
+                    doc.text(trimmedLine, xPos, yPos);
+                    yPos += lineHeight;
+                } else if (isItalic) {
                     // Remove asterisks and set italic
                     const italicText = line.substring(1, line.length - 1);
                     doc.setFont(undefined, 'italic');
@@ -809,10 +854,11 @@ ${signatory}`;
                     // Handle bold and underlined text (Sincerely Yours Media LLC header)
                     const cleanLine = line.replace(/\*\*__/g, '').replace(/__\*\*/g, '').trim();
                     doc.setFont(undefined, 'bold');
-                    doc.text(cleanLine, margin, yPos);
-                    // Add underline
                     const textWidth = doc.getTextWidth(cleanLine);
-                    doc.line(margin, yPos + 1, margin + textWidth, yPos + 1);
+                    const xPos = (pageWidth - textWidth) / 2; // Center the text
+                    doc.text(cleanLine, xPos, yPos);
+                    // Add underline
+                    doc.line(xPos, yPos + 1, xPos + textWidth, yPos + 1);
                     doc.setFont(undefined, 'normal');
                     yPos += lineHeight;
                 } else if (line.includes('**')) {
