@@ -478,14 +478,34 @@
                 const data = await response.json();
                 const tasks = data.data;
                 
-                // Find matching artist task (case-insensitive, fuzzy match)
+                // Find matching artist task (case-insensitive, smart match)
                 const normalizedSearch = artistName.toLowerCase().trim();
+                const searchWords = normalizedSearch.split(/\s+/); // Split into words
+                
                 const matchingTask = tasks.find(task => {
                     const taskName = task.name.toLowerCase().trim();
-                    // Check for exact match or contains match
-                    return taskName === normalizedSearch || 
-                           taskName.includes(normalizedSearch) || 
-                           normalizedSearch.includes(taskName);
+                    
+                    // Exact match
+                    if (taskName === normalizedSearch) return true;
+                    
+                    // Full name is contained in task name (e.g., "Day Lee" in "Day Lee - Deal Discussion")
+                    if (taskName.includes(normalizedSearch)) return true;
+                    
+                    // For partial matches, require significant overlap
+                    // Don't match on common prefixes like "Lil", "DJ", "MC", etc.
+                    const commonPrefixes = ['lil', 'dj', 'mc', 'the', 'big', 'young', 'king', 'queen'];
+                    const taskWords = taskName.split(/\s+/);
+                    
+                    // Check if all search words are in task name (order doesn't matter)
+                    const allWordsMatch = searchWords.every(word => 
+                        !commonPrefixes.includes(word) && taskWords.some(taskWord => taskWord.includes(word))
+                    );
+                    
+                    // Require at least 70% of the search string to match for partial matches
+                    const minMatchLength = Math.max(5, normalizedSearch.length * 0.7);
+                    const isSignificantMatch = normalizedSearch.length >= minMatchLength && taskName.includes(normalizedSearch.substring(0, minMatchLength));
+                    
+                    return allWordsMatch || isSignificantMatch;
                 });
                 
                 return matchingTask;
