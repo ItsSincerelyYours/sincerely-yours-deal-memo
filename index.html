@@ -539,53 +539,18 @@
             lines.forEach((line, lineIndex) => {
                 // Format the header (first line - Sincerely Yours Media LLC)
                 if (lineIndex === 0 && line.includes('Sincerely Yours Media LLC')) {
-                    const trimmedLine = line.trim();
-                    const lineStart = currentIndex + (line.length - line.trimLeft().length);
-                    
-                    // Make it bold
+                    // Make it bold and underlined
                     requests.push({
                         updateTextStyle: {
                             range: {
-                                startIndex: lineStart,
-                                endIndex: lineStart + trimmedLine.length
+                                startIndex: currentIndex,
+                                endIndex: currentIndex + line.length
                             },
                             textStyle: {
                                 bold: true,
                                 underline: true
                             },
                             fields: 'bold,underline'
-                        }
-                    });
-                    
-                    // Center align the header section (lines 0-3)
-                    requests.push({
-                        updateParagraphStyle: {
-                            range: {
-                                startIndex: currentIndex,
-                                endIndex: currentIndex + line.length
-                            },
-                            paragraphStyle: {
-                                alignment: 'CENTER'
-                            },
-                            fields: 'alignment'
-                        }
-                    });
-                }
-                
-                // Center align other header lines (c/o, address, city)
-                if ((lineIndex === 1 && line.includes('c/o Granderson')) ||
-                    (lineIndex === 2 && line.includes('150 S. Rodeo')) ||
-                    (lineIndex === 3 && line.includes('Beverly Hills'))) {
-                    requests.push({
-                        updateParagraphStyle: {
-                            range: {
-                                startIndex: currentIndex,
-                                endIndex: currentIndex + line.length
-                            },
-                            paragraphStyle: {
-                                alignment: 'CENTER'
-                            },
-                            fields: 'alignment'
                         }
                     });
                 }
@@ -757,10 +722,10 @@
             const profitsSection = `${netProfit}% of Net Profits (to be defined in the Agreement) in connection with the Masters, and ${syncProfit}% of Net Profits in connection with revenue collected from third party sync licenses.${merchText} Unless otherwise agreed between the parties in writing, you will be responsible for paying all producers, mixers and side artists in connection with the Masters.`;
             
             // Build the complete memo (same as original)
-            const memo = `                                   **__Sincerely Yours Media LLC__**
-                                    c/o Granderson Des Rochers LLP
-                                       150 S. Rodeo Drive, Suite 300
-                                         Beverly Hills, CA 90212
+            const memo = `**__Sincerely Yours Media LLC__**
+c/o Granderson Des Rochers LLP
+150 S. Rodeo Drive, Suite 300
+Beverly Hills, CA 90212
 
 
 Date: ${formatDate(date)}
@@ -823,12 +788,6 @@ ${signatory}`;
                     yPos = 20;
                 }
                 
-                // Check if line should be centered (has leading spaces)
-                const isCentered = line.trim() !== line && line.includes('Sincerely Yours Media LLC') || 
-                                 line.includes('c/o Granderson') || 
-                                 line.includes('150 S. Rodeo') || 
-                                 line.includes('Beverly Hills');
-                
                 // Check for italic text (wrapped in *)
                 const isItalic = line.startsWith('*') && line.endsWith('*');
                 
@@ -850,19 +809,11 @@ ${signatory}`;
                     // Handle bold and underlined text (Sincerely Yours Media LLC header)
                     const cleanLine = line.replace(/\*\*__/g, '').replace(/__\*\*/g, '').trim();
                     doc.setFont(undefined, 'bold');
-                    const textWidth = doc.getTextWidth(cleanLine);
-                    const xPos = (pageWidth - textWidth) / 2; // Center the text
-                    doc.text(cleanLine, xPos, yPos);
+                    doc.text(cleanLine, margin, yPos);
                     // Add underline
-                    doc.line(xPos, yPos + 1, xPos + textWidth, yPos + 1);
+                    const textWidth = doc.getTextWidth(cleanLine);
+                    doc.line(margin, yPos + 1, margin + textWidth, yPos + 1);
                     doc.setFont(undefined, 'normal');
-                    yPos += lineHeight;
-                } else if (isCentered) {
-                    // Center aligned text
-                    const trimmedLine = line.trim();
-                    const textWidth = doc.getTextWidth(trimmedLine);
-                    const xPos = (pageWidth - textWidth) / 2;
-                    doc.text(trimmedLine, xPos, yPos);
                     yPos += lineHeight;
                 } else if (line.includes('**')) {
                     // Handle bold text
