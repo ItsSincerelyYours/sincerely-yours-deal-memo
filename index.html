@@ -607,12 +607,11 @@
                 const doc = await createResponse.json();
                 const documentId = doc.documentId;
                 
-                // Move the document to the specific folder
-                // Deal Memos folder in Google Drive
+                // Move the document to the Deal Memo folder (restricted access)
                 const FOLDER_ID = '1-C1xWX-H48w0TKJITw957Cbm92iOxmpd';
                 
                 try {
-                    // Add the document to the folder
+                    // Move document to the Deal Memo folder
                     const moveResponse = await fetch(`https://www.googleapis.com/drive/v3/files/${documentId}?addParents=${FOLDER_ID}&removeParents=root`, {
                         method: 'PATCH',
                         headers: {
@@ -623,32 +622,16 @@
                     
                     if (!moveResponse.ok) {
                         console.error('Failed to move document to folder:', await moveResponse.text());
+                        console.log('Document created in My Drive. Move to Deal Memo folder manually.');
                     } else {
                         console.log('Document successfully moved to Deal Memo folder');
                     }
                     
-                    // Set sharing permissions - anyone with link can edit
-                    const permResponse = await fetch(`https://www.googleapis.com/drive/v3/files/${documentId}/permissions`, {
-                        method: 'POST',
-                        headers: {
-                            'Authorization': `Bearer ${accessToken}`,
-                            'Content-Type': 'application/json',
-                        },
-                        body: JSON.stringify({
-                            role: 'writer',
-                            type: 'anyone',
-                            allowFileDiscovery: false
-                        })
-                    });
-                    
-                    if (!permResponse.ok) {
-                        console.error('Failed to set permissions:', await permResponse.text());
-                    } else {
-                        console.log('Permissions set successfully');
-                    }
-                } catch (moveError) {
-                    console.error('Error moving document to folder or setting permissions:', moveError);
-                    // Continue even if move/permissions fail - document is still created
+                    // Don't set "anyone with link" permissions - keep folder's restricted access
+                    console.log('Document inherits folder permissions (team access only)');
+                } catch (error) {
+                    console.error('Error moving document to folder:', error);
+                    console.log('Document created in My Drive. Move to Deal Memo folder manually.');
                 }
                 
                 // Format the content for Google Docs
