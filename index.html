@@ -357,17 +357,12 @@
         
         // Asana Configuration - Using localStorage for PAT
         let ASANA_CONFIG = {
-            PAT: localStorage.getItem('asana_pat') || '2/1210862797936300/1211186740843122:31cebcb5b9b44ef891ee63956bd47538',
+            PAT: localStorage.getItem('asana_pat') || 'NOT_CONFIGURED',
             PROJECT_ID: '1208632760893835', // Artist Pipeline project
             WORKSPACE_ID: '1208285122467189', // From your URL
             SECTION_NAME: 'DEALS PENDING APPROVAL',
             STAGE_VALUE: 'Deal Memo Approval'
         };
-        
-        // Store PAT in localStorage if not already there
-        if (!localStorage.getItem('asana_pat')) {
-            localStorage.setItem('asana_pat', ASANA_CONFIG.PAT);
-        }
         
         let tokenClient;
         let accessToken = null;
