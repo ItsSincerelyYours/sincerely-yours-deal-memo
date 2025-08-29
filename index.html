@@ -493,9 +493,23 @@
                             'Content-Type': 'application/json',
                         }
                     });
+                    
+                    // Set sharing permissions - anyone with link can edit
+                    await fetch(`https://www.googleapis.com/drive/v3/files/${documentId}/permissions`, {
+                        method: 'POST',
+                        headers: {
+                            'Authorization': `Bearer ${accessToken}`,
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            role: 'writer',
+                            type: 'anyone',
+                            allowFileDiscovery: false
+                        })
+                    });
                 } catch (moveError) {
-                    console.error('Error moving document to folder:', moveError);
-                    // Continue even if move fails - document is still created
+                    console.error('Error moving document to folder or setting permissions:', moveError);
+                    // Continue even if move/permissions fail - document is still created
                 }
                 
                 // Format the content for Google Docs
