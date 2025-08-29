@@ -588,11 +588,12 @@
             const docTitle = `${artistName} x Sincerely Yours Deal Memo`;
             
             try {
-                // Create document directly in the Deal Memo folder using Drive API
+                // Create document directly in the Deal Memo folder (shared drive)
                 const FOLDER_ID = '1-C1xWX-H48w0TKJITw957Cbm92iOxmpd';
                 
-                // Step 1: Create a blank Google Doc in the Deal Memo folder
-                const createResponse = await fetch('https://www.googleapis.com/drive/v3/files', {
+                // Step 1: Create a blank Google Doc in the shared drive folder
+                // Note: supportsAllDrives=true is required for shared drives
+                const createResponse = await fetch('https://www.googleapis.com/drive/v3/files?supportsAllDrives=true', {
                     method: 'POST',
                     headers: {
                         'Authorization': `Bearer ${accessToken}`,
@@ -613,9 +614,9 @@
                 const documentId = file.id;
                 console.log('Document created directly in Deal Memo folder');
                 
-                // Set permissions to anyone at sincerely-yours.xyz can edit
+                // Set permissions to anyone at sincerely-yours.xyz can edit (with shared drive support)
                 try {
-                    const permResponse = await fetch(`https://www.googleapis.com/drive/v3/files/${documentId}/permissions`, {
+                    const permResponse = await fetch(`https://www.googleapis.com/drive/v3/files/${documentId}/permissions?supportsAllDrives=true`, {
                         method: 'POST',
                         headers: {
                             'Authorization': `Bearer ${accessToken}`,
