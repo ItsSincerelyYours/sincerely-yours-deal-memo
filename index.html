@@ -588,45 +588,33 @@
             const docTitle = `${artistName} x Sincerely Yours Deal Memo`;
             
             try {
-                // Create a new Google Doc
-                const createResponse = await fetch('https://docs.googleapis.com/v1/documents', {
+                // Create document directly in the Deal Memo folder using Drive API
+                const FOLDER_ID = '1-C1xWX-H48w0TKJITw957Cbm92iOxmpd';
+                
+                // Step 1: Create a blank Google Doc in the Deal Memo folder
+                const createResponse = await fetch('https://www.googleapis.com/drive/v3/files', {
                     method: 'POST',
                     headers: {
                         'Authorization': `Bearer ${accessToken}`,
                         'Content-Type': 'application/json',
                     },
                     body: JSON.stringify({
-                        title: docTitle
+                        name: docTitle,
+                        mimeType: 'application/vnd.google-apps.document',
+                        parents: [FOLDER_ID]
                     })
                 });
                 
                 if (!createResponse.ok) {
-                    throw new Error('Failed to create document');
+                    throw new Error('Failed to create document in folder');
                 }
                 
-                const doc = await createResponse.json();
-                const documentId = doc.documentId;
+                const file = await createResponse.json();
+                const documentId = file.id;
+                console.log('Document created directly in Deal Memo folder');
                 
-                // Move the document to the Deal Memo folder and set domain permissions
-                const FOLDER_ID = '1-C1xWX-H48w0TKJITw957Cbm92iOxmpd';
-                
+                // Set permissions to anyone at sincerely-yours.xyz can edit
                 try {
-                    // Move document to the Deal Memo folder
-                    const moveResponse = await fetch(`https://www.googleapis.com/drive/v3/files/${documentId}?addParents=${FOLDER_ID}&removeParents=root`, {
-                        method: 'PATCH',
-                        headers: {
-                            'Authorization': `Bearer ${accessToken}`,
-                            'Content-Type': 'application/json',
-                        }
-                    });
-                    
-                    if (!moveResponse.ok) {
-                        console.error('Failed to move document to folder:', await moveResponse.text());
-                    } else {
-                        console.log('Document successfully moved to Deal Memo folder');
-                    }
-                    
-                    // Set permissions to anyone at sincerely-yours.xyz can edit
                     const permResponse = await fetch(`https://www.googleapis.com/drive/v3/files/${documentId}/permissions`, {
                         method: 'POST',
                         headers: {
@@ -647,7 +635,7 @@
                         console.log('Permissions set to: Anyone at sincerely-yours.xyz can edit');
                     }
                 } catch (error) {
-                    console.error('Error setting up document:', error);
+                    console.error('Error setting permissions:', error);
                 }
                 
                 // Format the content for Google Docs
