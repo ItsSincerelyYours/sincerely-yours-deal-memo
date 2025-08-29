@@ -354,6 +354,15 @@
         const DISCOVERY_DOCS = ['https://docs.googleapis.com/$discovery/rest?version=v1'];
         const SCOPES = 'https://www.googleapis.com/auth/documents https://www.googleapis.com/auth/drive.file https://www.googleapis.com/auth/drive';
         
+        // Asana Configuration - UPDATE THESE LOCALLY
+        const ASANA_CONFIG = {
+            PAT: 'PASTE_YOUR_ASANA_PAT_HERE', // Your Asana Personal Access Token
+            PROJECT_ID: '1208632760893835', // Artist Pipeline project
+            WORKSPACE_ID: '1208285122467189', // From your URL
+            SECTION_NAME: 'DEALS PENDING APPROVAL',
+            STAGE_VALUE: 'Deal Memo Approval'
+        };
+        
         let tokenClient;
         let accessToken = null;
         
@@ -446,6 +455,102 @@
             }, 5000);
         }
         
+        // Asana Integration Functions
+        async function searchAsanaForArtist(artistName) {
+            if (!ASANA_CONFIG.PAT || ASANA_CONFIG.PAT === 'PASTE_YOUR_ASANA_PAT_HERE') {
+                console.log('Asana PAT not configured, skipping integration');
+                return null;
+            }
+            
+            try {
+                // Search for tasks in the Artist Pipeline project
+                const response = await fetch(`https://app.asana.com/api/1.0/projects/${ASANA_CONFIG.PROJECT_ID}/tasks`, {
+                    headers: {
+                        'Authorization': `Bearer ${ASANA_CONFIG.PAT}`,
+                        'Accept': 'application/json'
+                    }
+                });
+                
+                if (!response.ok) {
+                    throw new Error('Failed to fetch Asana tasks');
+                }
+                
+                const data = await response.json();
+                const tasks = data.data;
+                
+                // Find matching artist task (case-insensitive, fuzzy match)
+                const normalizedSearch = artistName.toLowerCase().trim();
+                const matchingTask = tasks.find(task => {
+                    const taskName = task.name.toLowerCase().trim();
+                    // Check for exact match or contains match
+                    return taskName === normalizedSearch || 
+                           taskName.includes(normalizedSearch) || 
+                           normalizedSearch.includes(taskName);
+                });
+                
+                return matchingTask;
+            } catch (error) {
+                console.error('Error searching Asana:', error);
+                return null;
+            }
+        }
+        
+        async function updateAsanaTask(taskId, googleDocUrl, artistName) {
+            if (!ASANA_CONFIG.PAT || ASANA_CONFIG.PAT === 'PASTE_YOUR_ASANA_PAT_HERE') {
+                return;
+            }
+            
+            try {
+                // First, get the sections for the project
+                const sectionsResponse = await fetch(`https://app.asana.com/api/1.0/projects/${ASANA_CONFIG.PROJECT_ID}/sections`, {
+                    headers: {
+                        'Authorization': `Bearer ${ASANA_CONFIG.PAT}`,
+                        'Accept': 'application/json'
+                    }
+                });
+                
+                const sectionsData = await sectionsResponse.json();
+                const targetSection = sectionsData.data.find(section => 
+                    section.name.toUpperCase().includes('DEALS PENDING APPROVAL')
+                );
+                
+                if (targetSection) {
+                    // Move task to the section
+                    await fetch(`https://app.asana.com/api/1.0/sections/${targetSection.gid}/addTask`, {
+                        method: 'POST',
+                        headers: {
+                            'Authorization': `Bearer ${ASANA_CONFIG.PAT}`,
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            data: {
+                                task: taskId
+                            }
+                        })
+                    });
+                }
+                
+                // Add comment with Google Doc link
+                await fetch(`https://app.asana.com/api/1.0/tasks/${taskId}/stories`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${ASANA_CONFIG.PAT}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        data: {
+                            text: `Deal Memo Generated: ${artistName} x Sincerely Yours\n\nGoogle Doc: ${googleDocUrl}\n\nGenerated on ${new Date().toLocaleDateString()}`
+                        }
+                    })
+                });
+                
+                showSuccess('Asana task updated successfully!');
+            } catch (error) {
+                console.error('Error updating Asana task:', error);
+                showError('Failed to update Asana task, but document was created');
+            }
+        }
+        
         // Create Google Doc
         async function createGoogleDoc() {
             if (!accessToken) {
@@ -536,6 +641,15 @@
                 window.open(docUrl, '_blank');
                 
                 showSuccess(`Google Doc created successfully! Opening in new tab...`);
+                
+                // Update Asana task if artist is found
+                const asanaTask = await searchAsanaForArtist(artistName);
+                if (asanaTask) {
+                    console.log(`Found Asana task for ${artistName}:`, asanaTask.name);
+                    await updateAsanaTask(asanaTask.gid, docUrl, artistName);
+                } else {
+                    console.log(`No Asana task found for artist: ${artistName}`);
+                }
                 
             } catch (error) {
                 console.error('Error creating Google Doc:', error);
