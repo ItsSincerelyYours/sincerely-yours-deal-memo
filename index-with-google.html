@@ -47,6 +47,19 @@
         }
         
         .google-status.connected {
+        #googleLoading {
+            display: inline-block;
+            width: 22px;
+            height: 22px;
+            border: 3px solid #4285f4;
+            border-top: 3px solid #fff;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            vertical-align: middle;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
             background: #d4edda;
             color: #155724;
         }
@@ -181,6 +194,7 @@
             <span>🔐</span>
             <span id="statusText">Not connected to Google</span>
             <button id="googleSignIn" class="google-btn" style="margin: 0; padding: 8px 20px;">Connect Google Account</button>
+            <span id="googleLoading" style="display:none; margin-left:10px;"></span>
         </div>
         
         <div class="success-message" id="successMessage"></div>
@@ -371,12 +385,15 @@
         
         // Handle Google Sign In
         document.getElementById('googleSignIn').addEventListener('click', () => {
+            const loading = document.getElementById('googleLoading');
+            loading.style.display = 'inline-block';
             if (accessToken === null) {
                 tokenClient.requestAccessToken();
             } else {
                 google.accounts.oauth2.revoke(accessToken, () => {
                     accessToken = null;
                     updateGoogleStatus(false);
+                    loading.style.display = 'none';
                 });
             }
         });
@@ -396,6 +413,9 @@
                 statusText.textContent = 'Not connected to Google';
                 signInBtn.textContent = 'Connect Google Account';
             }
+            // Always hide loading spinner after status update
+            const loading = document.getElementById('googleLoading');
+            if (loading) loading.style.display = 'none';
         }
         
         // Show success message
